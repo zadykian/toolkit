@@ -89,7 +89,7 @@ messages=$skill#3-commit-messages-conventional-commits-100
 # the most changed lines of a commit and of a pull request, and the most pull requests of a
 # stack, at $skill#hard-rules.
 types='feat fix refactor perf test docs style build ci chore revert'
-max_commit_lines=100 max_pr_lines=300 max_stack_prs=10
+max_commit_lines=100 max_pr_lines=500 max_stack_prs=10
 pull=$(gh api "repos/$GH_REPO/pulls/$PR" --jq '[.base.ref, .base.repo.default_branch, .commits // 0,
     .stack.size // 0, .title] | map(tostring) | join(" ")')
 read -r base trunk total linked title <<<"$pull"

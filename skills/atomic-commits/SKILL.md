@@ -1,6 +1,6 @@
 ---
 name: "atomic-commits"
-description: "Use when implementing code changes in a git repo - deliver small, self-contained Conventional Commits, and split any change over 300 diff lines into a stack of up to 10 independently mergeable PRs."
+description: "Use when implementing code changes in a git repo - deliver small, self-contained Conventional Commits, and split any change over 500 diff lines into a stack of up to 10 independently mergeable PRs."
 ---
 
 # Atomic commits and stacked PRs
@@ -13,9 +13,9 @@ description: "Use when implementing code changes in a git repo - deliver small, 
    capitalized or not.
 3. Every commit message follows Conventional Commits 1.0.0 (section 3). A change that fits two types
    is two commits.
-4. No PR exceeds 300 changed lines against its own base. Larger work becomes a stack of PRs, each of
+4. No PR exceeds 500 changed lines against its own base. Larger work becomes a stack of PRs, each of
    which leaves `main` green and releasable even if the rest never lands.
-5. No stack exceeds 10 PRs. Work that 10 PRs of 300 lines cannot hold splits into sub-issues, each
+5. No stack exceeds 10 PRs. Work that 10 PRs of 500 lines cannot hold splits into sub-issues, each
    of which lands as a stack of its own.
 6. Plan the split before writing code, then commit as you go. Never write everything first and split
    afterwards: after-the-fact splits produce commits that don't build.
@@ -25,8 +25,8 @@ only: lockfiles, generated code, test snapshots/golden files, vendored dependenc
 pathspecs under "Verify"). Never meet the limit by moving tests into a later PR, excluding
 hand-written files, or compressing formatting.
 
-**Inseparable changes:** some changes cannot be cut into PRs of 300 lines that each leave `main`
-green, such as a migration from one language to another. Their PRs may exceed 300 lines. They still
+**Inseparable changes:** some changes cannot be cut into PRs of 500 lines that each leave `main`
+green, such as a migration from one language to another. Their PRs may exceed 500 lines. They still
 fit one stack of 10 PRs, hold nothing else, and wait for the user's approval before opening.
 
 Under 20 changed lines in total, one commit is fine; skip the plan.
@@ -47,7 +47,7 @@ PR 3/3  feat(checkout): retry failed gateway calls                  ~90
 ```
 
 - Order by dependency: whatever later commits need comes first.
-- Estimates run low. If a PR is estimated above ~250, split it now.
+- Estimates run low. If a PR is estimated above ~400, split it now.
 - Over 10 PRs, stop and split the issue into sub-issues, as `issue` files them, and plan a stack
   for each.
 - If the user is present and the plan has more than one PR, show it and wait for a go-ahead.

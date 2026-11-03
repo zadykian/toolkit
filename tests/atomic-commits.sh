@@ -165,11 +165,11 @@ warnings 3
 
 setup warns-on-a-large-pull-request
 commits 'feat: add y'
-answer repos/o/r/pulls/1/files '[{"filename": "a", "additions": 200, "deletions": 0}]' \
+answer repos/o/r/pulls/1/files '[{"filename": "a", "additions": 400, "deletions": 0}]' \
     '[{"filename": "b", "additions": 51, "deletions": 50},
     {"filename": "go.sum", "additions": 900, "deletions": 0}]'
 atomic
-warns '#1 changes 301 lines against `main`.'
+warns '#1 changes 501 lines against `main`.'
 warnings 1
 
 # A stack holds as many pull requests as GitHub links in it, or as stand below #1, each heading the
