@@ -125,6 +125,7 @@ summarizes 'GIT_SEQUENCE_EDITOR=: git rebase -i --autosquash --update-refs main'
 
 setup warns-once-on-a-merge-commit
 answer repos/o/r/pulls/1 "$(pull '{"base": {"ref": "feat/x-1"}}')"
+answer 'repos/o/r/pulls?head=o:feat/x-1' '[]'
 answer repos/o/r/pulls/1/commits '[{"sha": "abcdef0123", "parents": [{}, {}],
     "commit": {"message": "Merge branch '\''main'\'' into feat"}}]'
 answer repos/o/r/pulls/1/files '[]'
@@ -169,6 +170,33 @@ answer repos/o/r/pulls/1/files '[{"filename": "a", "additions": 200, "deletions"
     {"filename": "go.sum", "additions": 900, "deletions": 0}]'
 atomic
 warns '#1 changes 301 lines against `main`.'
+warnings 1
+
+# A stack holds as many pull requests as GitHub links in it, or as stand below #1, each heading the
+# base of the one above, whichever is more.
+setup warns-on-a-stack-over-the-cap
+commits 'feat: add y'
+answer repos/o/r/pulls/1 "$(pull '{"stack": {"size": 10}}')"
+atomic
+warnings 0
+answer repos/o/r/pulls/1 "$(pull '{"stack": {"size": 11}}')"
+atomic
+warns 'title=atomic-commits%3A The stack holds over 10 pull requests::'
+warns '#1 stands in a stack of at least 11 pull requests.'
+warnings 1
+
+setup warns-on-a-chain-of-bases-over-the-cap
+commits 'feat: add y'
+answer 'repos/o/r/pulls?head=o:feat-1' '[{"base": {"ref": "main"}}]'
+for n in $(seq 2 10); do
+    answer "repos/o/r/pulls?head=o:feat-$n" "[{\"base\": {\"ref\": \"feat-$((n - 1))\"}}]"
+done
+answer repos/o/r/pulls/1 "$(pull '{"base": {"ref": "feat-9"}}')"
+atomic
+warnings 0
+answer repos/o/r/pulls/1 "$(pull '{"base": {"ref": "feat-10"}}')"
+atomic
+warns '#1 stands in a stack of at least 11 pull requests.'
 warnings 1
 
 setup warns-on-the-title

@@ -103,8 +103,12 @@ agree "$(values "$check_ac" 'its body says so: \\`([a-z]+)\\`')" "$word"
 agree "$(values "$check_ac" 'its body does not say \\`([a-z]+)\\`')" "$word"
 
 setup holds-the-cap-of-a-pull-request
-agree "$(values "$check_ac" ' max_pr_lines=([0-9]+)$')" \
+agree "$(values "$check_ac" ' max_pr_lines=([0-9]+) ')" \
     "$(values "$skill_ac" 'No PR exceeds ([0-9]+) changed lines')"
+
+setup holds-the-cap-of-a-stack
+agree "$(values "$check_ac" ' max_stack_prs=([0-9]+)$')" \
+    "$(values "$skill_ac" 'No stack exceeds ([0-9]+) PRs')"
 
 setup holds-the-types-of-a-header
 types=$(values "$check_ac" '([a-z]+)' "^types='")

@@ -1,6 +1,6 @@
 ---
 name: "atomic-commits"
-description: "Use when implementing code changes in a git repo - deliver small, self-contained Conventional Commits, and split any change over 300 diff lines into a stack of independently mergeable PRs."
+description: "Use when implementing code changes in a git repo - deliver small, self-contained Conventional Commits, and split any change over 300 diff lines into a stack of up to 10 independently mergeable PRs."
 ---
 
 # Atomic commits and stacked PRs
@@ -15,7 +15,9 @@ description: "Use when implementing code changes in a git repo - deliver small, 
    is two commits.
 4. No PR exceeds 300 changed lines against its own base. Larger work becomes a stack of PRs, each of
    which leaves `main` green and releasable even if the rest never lands.
-5. Plan the split before writing code, then commit as you go. Never write everything first and split
+5. No stack exceeds 10 PRs. Work that 10 PRs of 300 lines cannot hold splits into sub-issues, each
+   of which lands as a stack of its own.
+6. Plan the split before writing code, then commit as you go. Never write everything first and split
    afterwards: after-the-fact splits produce commits that don't build.
 
 **Counting lines:** insertions + deletions (`git diff --numstat`), tests and docs included. Excluded
@@ -45,6 +47,8 @@ PR 3/3  feat(checkout): retry failed gateway calls                  ~90
 
 - Order by dependency: whatever later commits need comes first.
 - Estimates run low. If a PR is estimated above ~250, split it now.
+- Over 10 PRs, stop and split the issue into sub-issues, as `issue` files them, and plan a stack
+  for each.
 - If the user is present and the plan has more than one PR, show it and wait for a go-ahead.
   Otherwise follow it and include it in the final report.
 
@@ -275,7 +279,7 @@ If any size is over its limit or any header doesn't conform, fix it before repor
 In CI, two of the toolkit's actions check a PR against these rules. Both only warn, and never
 block the merge:
 
-- [`atomic-commits`][ac-action]: its commits, its size and its title.
+- [`atomic-commits`][ac-action]: its commits, its size, its stack's size and its title.
 - [`pr-description`][pd-action]: its description, as section 6 sets it.
 
 [ac-action]: https://github.com/zadykian/toolkit/tree/main/actions/atomic-commits
