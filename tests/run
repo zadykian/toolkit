@@ -28,10 +28,10 @@
 # root. Pass a case's inputs to check as VAR=VALUE, so that none leaks into the next case. git
 # reads no config of the user's, and commits as test.
 #
-# gh answers repos/o/r/pulls/1 with `pull`, from feat into main, its head $HEAD_SHA, and
-# repos/o/r/issues/1/comments and repos/o/r/commits/$HEAD_SHA/check-runs with none. A PATH is
-# what the check passes to gh api, without per_page and page. A write answers {}, or the answer
-# for `METHOD PATH`, as `POST PATH`.
+# gh answers repos/o/r/pulls/1 with `pull`, from feat into main, the default branch, its head
+# $HEAD_SHA, and repos/o/r/issues/1/comments and repos/o/r/commits/$HEAD_SHA/check-runs with
+# none. A PATH is what the check passes to gh api, without per_page and page. A write answers {},
+# or the answer for `METHOD PATH`, as `POST PATH`.
 
 # The case files call the functions below, which ShellCheck does not see, as it reads no case.
 # shellcheck disable=SC2329
@@ -88,7 +88,8 @@ later() {
 # its own.
 pull() {
     jq -n --arg sha "$HEAD_SHA" --argjson over "${1:-null}" '{number: 1, title: "feat: add a check",
-        body: "", base: {ref: "main"}, head: {ref: "feat", sha: $sha}} * ($over // {})'
+        body: "", base: {ref: "main", repo: {default_branch: "main"}},
+        head: {ref: "feat", sha: $sha}} * ($over // {})'
 }
 
 # summarizes checks that the job summary holds the text $1.

@@ -86,11 +86,13 @@ report_start atomic-commits
 skill=$(file_url skills/atomic-commits/SKILL.md)
 messages=$skill#3-commit-messages-conventional-commits-100
 # The skill fixes these, and no input changes them: the types of a header, at $messages, and
-# the most changed lines of a commit and of a pull request, at $skill#hard-rules.
+# the most changed lines of a commit and of a pull request, and the most pull requests of a
+# stack, at $skill#hard-rules.
 types='feat fix refactor perf test docs style build ci chore revert'
-max_commit_lines=100 max_pr_lines=300
-pull=$(gh api "repos/$GH_REPO/pulls/$PR" --jq '"\(.base.ref) \(.commits // 0) \(.title)"')
-read -r base total title <<<"$pull"
+max_commit_lines=100 max_pr_lines=500 max_stack_prs=10
+pull=$(gh api "repos/$GH_REPO/pulls/$PR" --jq '[.base.ref, .base.repo.default_branch, .commits // 0,
+    .stack.size // 0, .title] | map(tostring) | join(" ")')
+read -r base trunk total linked title <<<"$pull"
 header_form="^(${types// /|})(\([a-z0-9._/-]+\))?!?: [^ ]"
 # How to reword a commit, as section 4 of the skill says.
 reword=$(
@@ -139,6 +141,10 @@ its body says so: \`mechanical\`. $reword"
 rule pr-size "The pull request is over $max_pr_lines changed lines" "$skill#hard-rules" "Split it \
 into a stack of pull requests, each of $max_pr_lines changed lines at most against its own base. \
 Section 5 of the skill says where to cut it, and section 6 how to stack the branches."
+rule pr-stack-size "The stack holds over $max_stack_prs pull requests" "$skill#hard-rules" "Land \
+$max_stack_prs of them at most as one stack, and split the rest of the work into sub-issues of its \
+issue, each landing as a stack of its own. An inseparable change, such as a migration to another \
+language, takes fewer and larger pull requests instead."
 stack=$skill#6-stack-mechanics-git--238
 rule pr-title 'The PR title is not a Conventional Commits header' "$stack" "Retitle it as a \
 commit header, as a squash merge turns the title into the commit that lands: \
@@ -185,4 +191,16 @@ $breaking."
 fi
 size=$(changed "repos/$GH_REPO/pulls/$PR/files?per_page=100" '.[]')
 [ "$size" -le "$max_pr_lines" ] || finding pr-size "#$PR changes $size lines against \`$base\`."
+# The stack holds as many pull requests as GitHub links in it, or as stand below #$PR, each heading
+# the base of the one above, whichever is more. The walk stops past the cap.
+stacked=1 ref=$base
+while [ "$ref" != "$trunk" ] && [ "$stacked" -le "$max_stack_prs" ]; do
+    ref=$(gh api -X GET "repos/$GH_REPO/pulls" -f head="${GH_REPO%%/*}:$ref" \
+        --jq '.[0].base.ref // empty')
+    [ -n "$ref" ] || break
+    stacked=$((stacked + 1))
+done
+[ "$stacked" -ge "$linked" ] || stacked=$linked
+[ "$stacked" -le "$max_stack_prs" ] ||
+    finding pr-stack-size "#$PR stands in a stack of at least $stacked pull requests."
 report_finish

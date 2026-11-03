@@ -72,8 +72,10 @@ The sizes, as [the hard rules][rules] set them:
 - `commit-size`: a commit changes 100 lines at most, its insertions and deletions in the paths
   that `exclude` does not match. A purely mechanical commit, such as a rename, may be larger where
   its body says `mechanical`.
-- `pr-size`: the pull request changes 300 lines at most against its base, in the paths that
+- `pr-size`: the pull request changes 500 lines at most against its base, in the paths that
   `exclude` does not match.
+- `pr-stack-size`: the pull request's stack holds 10 pull requests at most. It counts those that
+  GitHub links in it, or those below it, each heading the base of the one above, whichever are more.
 
 The pull request's title, as [section 6][s6] sets it:
 
@@ -96,7 +98,8 @@ says how many commits the check skipped.
 
 It reads what GitHub's API says of the commits, and runs none of their code. So it cannot check
 that each commit builds and passes the tests on its own, or that it holds one logical change, as
-[the hard rules][rules] say. The review of each commit checks those.
+[the hard rules][rules] say. The review of each commit checks those. Nor can it tell an
+inseparable change, whose pull requests may exceed 500 lines, so `pr-size` warns on those too.
 
 [skill]: ../../skills/atomic-commits/SKILL.md
 [rules]: ../../skills/atomic-commits/SKILL.md#hard-rules

@@ -26,7 +26,8 @@ Reply with a plan and ask for approval:
 - what to check: the repository's gates, CI's jobs and the tests;
 - open decisions, each with a recommendation;
 - the pull requests and their order, where the change takes several, and what each waits for;
-- the issues, where one body cannot hold the change, as section 3 splits it.
+- the issues, where one body cannot hold the change, or one stack cannot land it, as section 3
+  splits it.
 
 "Approved, create the issue" means `gh issue create`, not code.
 
@@ -62,6 +63,9 @@ the fact and split the change:
 - or into an umbrella issue and its sub-issues, where they share one. The umbrella gives the goal
   and the facts the parts share, and each sub-issue one part. GitHub lists the sub-issues on the
   umbrella, so its body lists none.
+
+Split it the same way where it takes more pull requests than `atomic-commits` lets one stack hold,
+unless that skill calls it inseparable. Each issue then lands as a stack of its own.
 
 Each issue keeps to this section, its cap included.
 
