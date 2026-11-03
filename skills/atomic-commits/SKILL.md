@@ -25,8 +25,9 @@ only: lockfiles, generated code, test snapshots/golden files, vendored dependenc
 pathspecs under "Verify"). Never meet the limit by moving tests into a later PR, excluding
 hand-written files, or compressing formatting.
 
-If one change genuinely cannot go below 300 lines, isolate it in a PR that contains nothing else and
-ask the user before opening it.
+**Inseparable changes:** some changes cannot be cut into PRs of 300 lines that each leave `main`
+green, such as a migration from one language to another. Their PRs may exceed 300 lines. They still
+fit one stack of 10 PRs, hold nothing else, and wait for the user's approval before opening.
 
 Under 20 changed lines in total, one commit is fine; skip the plan.
 

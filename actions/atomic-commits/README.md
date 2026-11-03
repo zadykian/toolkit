@@ -98,7 +98,8 @@ says how many commits the check skipped.
 
 It reads what GitHub's API says of the commits, and runs none of their code. So it cannot check
 that each commit builds and passes the tests on its own, or that it holds one logical change, as
-[the hard rules][rules] say. The review of each commit checks those.
+[the hard rules][rules] say. The review of each commit checks those. Nor can it tell an
+inseparable change, whose pull requests may exceed 300 lines, so `pr-size` warns on those too.
 
 [skill]: ../../skills/atomic-commits/SKILL.md
 [rules]: ../../skills/atomic-commits/SKILL.md#hard-rules

@@ -143,7 +143,8 @@ into a stack of pull requests, each of $max_pr_lines changed lines at most again
 Section 5 of the skill says where to cut it, and section 6 how to stack the branches."
 rule pr-stack-size "The stack holds over $max_stack_prs pull requests" "$skill#hard-rules" "Land \
 $max_stack_prs of them at most as one stack, and split the rest of the work into sub-issues of its \
-issue, each landing as a stack of its own."
+issue, each landing as a stack of its own. An inseparable change, such as a migration to another \
+language, takes fewer and larger pull requests instead."
 stack=$skill#6-stack-mechanics-git--238
 rule pr-title 'The PR title is not a Conventional Commits header' "$stack" "Retitle it as a \
 commit header, as a squash merge turns the title into the commit that lands: \
