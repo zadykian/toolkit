@@ -8,11 +8,11 @@ land the stack of pull requests by GitHub's merge. The bundle is `flow@zadykian`
 
 Has Claude deliver a change as small, self-contained [Conventional Commits][cc], each of which
 builds and passes the tests. A change over 500 lines becomes a stack of pull requests, each of
-which leaves `main` green. A stack holds 10 at most, and larger work splits into sub-issues, each a
-stack of its own. An inseparable change, such as a migration to another language, may take pull
-requests over 500 lines instead. Claude uses it as it commits in a git repository, or as
-`/flow:atomic-commits`. To link a stack on GitHub, it needs `gh`, logged in, with the
-`github/gh-stack` extension.
+which leaves `main` green. A stack holds 5 at most and closes only the issues that planned it, so
+larger work splits into sub-issues, each a stack of its own. An inseparable change, such as a
+migration to another language, may take pull requests over 500 lines instead. Claude uses it as it
+commits in a git repository, or as `/flow:atomic-commits`. To link a stack on GitHub, it needs
+`gh`, logged in, with the `github/gh-stack` extension.
 
 A pull request's description opens with its title, word for word, in its one level-1 heading,
 `# {NAME}`. Then come `## Problem`, one to three sentences, and `## Changes`, bullets by behavior.

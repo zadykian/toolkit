@@ -176,27 +176,27 @@ warnings 1
 # base of the one above, whichever is more.
 setup warns-on-a-stack-over-the-cap
 commits 'feat: add y'
-answer repos/o/r/pulls/1 "$(pull '{"stack": {"size": 10}}')"
+answer repos/o/r/pulls/1 "$(pull '{"stack": {"size": 5}}')"
 atomic
 warnings 0
-answer repos/o/r/pulls/1 "$(pull '{"stack": {"size": 11}}')"
+answer repos/o/r/pulls/1 "$(pull '{"stack": {"size": 6}}')"
 atomic
-warns 'title=atomic-commits%3A The stack holds over 10 pull requests::'
-warns '#1 stands in a stack of at least 11 pull requests.'
+warns 'title=atomic-commits%3A The stack holds over 5 pull requests::'
+warns '#1 stands in a stack of at least 6 pull requests.'
 warnings 1
 
 setup warns-on-a-chain-of-bases-over-the-cap
 commits 'feat: add y'
 answer 'repos/o/r/pulls?head=o:feat-1' '[{"base": {"ref": "main"}}]'
-for n in $(seq 2 10); do
+for n in $(seq 2 5); do
     answer "repos/o/r/pulls?head=o:feat-$n" "[{\"base\": {\"ref\": \"feat-$((n - 1))\"}}]"
 done
-answer repos/o/r/pulls/1 "$(pull '{"base": {"ref": "feat-9"}}')"
+answer repos/o/r/pulls/1 "$(pull '{"base": {"ref": "feat-4"}}')"
 atomic
 warnings 0
-answer repos/o/r/pulls/1 "$(pull '{"base": {"ref": "feat-10"}}')"
+answer repos/o/r/pulls/1 "$(pull '{"base": {"ref": "feat-5"}}')"
 atomic
-warns '#1 stands in a stack of at least 11 pull requests.'
+warns '#1 stands in a stack of at least 6 pull requests.'
 warnings 1
 
 setup warns-on-the-title
