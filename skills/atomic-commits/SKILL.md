@@ -193,11 +193,14 @@ main ← feat/retry-1-gateway ← feat/retry-2-policy ← feat/retry-3-checkout
 - A PR holds no merge commit. Catch up with `main` by rebasing from the top branch, never by
   merging it in: `git fetch origin && git rebase --update-refs origin/main`.
 - Push and open PRs only when the user asked for it. Push each branch with
-  `git push --force-with-lease origin <branch>`. Open each PR against the branch below it:
-  `gh pr create --base feat/retry-1-gateway --head feat/retry-2-policy`.
-- Once the PRs are open, link them as one stack on GitHub, bottom first:
+  `git push --force-with-lease origin <branch>`. Open each PR against the branch below it, as a
+  draft where the change takes two or more:
+  `gh pr create --draft --base feat/retry-1-gateway --head feat/retry-2-policy`.
+- Link the open PRs as one stack, bottom first:
   `gh stack link feat/retry-1-gateway feat/retry-2-policy feat/retry-3-checkout`. It needs gh's
-  stack extension: `gh extension install github/gh-stack`.
+  stack extension: `gh extension install github/gh-stack`. Then run `gh pr ready <number>` on each,
+  bottom first: a PR opens before the link, so only an event after it names its stack. One PR
+  alone opens ready; a stack the user means to hold stays a draft.
 - Once a lower PR lands, GitHub retargets the next one and rebases the rest. Before editing again,
   fetch them and move each local branch to its remote one, the top branch last: `git fetch origin`,
   then `git switch -C <branch> origin/<branch>` for each.
