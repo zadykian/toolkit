@@ -75,7 +75,7 @@ The sizes, as [the hard rules][rules] set them:
 - `pr-size`: the pull request changes 500 lines at most against its base, in the paths that
   `exclude` does not match.
 - `pr-stack-size`: the pull request's stack holds 5 pull requests at most. It counts those that
-  GitHub links in it, or those below it, each heading the base of the one above, whichever are more.
+  GitHub links in it.
 
 The pull request's title, as [section 6][s6] sets it:
 
