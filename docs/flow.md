@@ -25,6 +25,25 @@ In CI, the toolkit's [`atomic-commits` action][ac-action] warns on a pull reques
 size or title break the skill's rules, and the [`pr-description` action][pd-action] on its
 description. Both only warn: neither blocks the merge.
 
+A stack's pull requests open as drafts, are linked, and then marked ready, bottom first. A
+workflow that reads the stack acts on an event after the link, which is `ready_for_review`. A job
+for the stack's top alone takes that type and this condition:
+
+```yaml
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+jobs:
+  long:
+    if: >-
+      (github.event.action != 'opened' || !github.event.pull_request.draft) &&
+      github.event.pull_request.stack.position == github.event.pull_request.stack.size
+```
+
+Outside a stack and on a push, `stack` is null, so null == null holds and the job runs. A job meant
+to run once per commit takes `if: github.event.action != 'ready_for_review'`, since that event
+repeats the head's commit.
+
 Every rule of the skill holds in every repository: the header, its types and scopes, and the
 body. So do the pull request's title and description, the size limits, the plan and the stack. The
 repository's CLAUDE.md names only facts, such as its build and test commands and the paths of its
