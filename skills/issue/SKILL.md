@@ -65,7 +65,8 @@ the fact and split the change:
   umbrella, so its body lists none.
 
 Split it the same way where it takes more pull requests than `atomic-commits` lets one stack hold,
-unless that skill calls it inseparable. Each issue then lands as a stack of its own.
+unless that skill calls it inseparable. Each issue then lands as a stack of its own, and a stack
+closes only the issues that planned it.
 
 Each issue keeps to this section, its cap included.
 
