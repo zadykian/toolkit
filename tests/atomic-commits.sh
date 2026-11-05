@@ -172,8 +172,7 @@ atomic
 warns '#1 changes 501 lines against `main`.'
 warnings 1
 
-# A stack holds as many pull requests as GitHub links in it, or as stand below #1, each heading the
-# base of the one above, whichever is more.
+# A stack holds as many pull requests as GitHub links in it.
 setup warns-on-a-stack-over-the-cap
 commits 'feat: add y'
 answer repos/o/r/pulls/1 "$(pull '{"stack": {"size": 5}}')"
@@ -182,21 +181,7 @@ warnings 0
 answer repos/o/r/pulls/1 "$(pull '{"stack": {"size": 6}}')"
 atomic
 warns 'title=atomic-commits%3A The stack holds over 5 pull requests::'
-warns '#1 stands in a stack of at least 6 pull requests.'
-warnings 1
-
-setup warns-on-a-chain-of-bases-over-the-cap
-commits 'feat: add y'
-answer 'repos/o/r/pulls?head=o:feat-1' '[{"base": {"ref": "main"}}]'
-for n in $(seq 2 5); do
-    answer "repos/o/r/pulls?head=o:feat-$n" "[{\"base\": {\"ref\": \"feat-$((n - 1))\"}}]"
-done
-answer repos/o/r/pulls/1 "$(pull '{"base": {"ref": "feat-4"}}')"
-atomic
-warnings 0
-answer repos/o/r/pulls/1 "$(pull '{"base": {"ref": "feat-5"}}')"
-atomic
-warns '#1 stands in a stack of at least 6 pull requests.'
+warns '#1 stands in a stack of 6 pull requests.'
 warnings 1
 
 setup warns-on-the-title

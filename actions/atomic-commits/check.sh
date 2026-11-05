@@ -90,9 +90,9 @@ messages=$skill#3-commit-messages-conventional-commits-100
 # stack, at $skill#hard-rules.
 types='feat fix refactor perf test docs style build ci chore revert'
 max_commit_lines=100 max_pr_lines=500 max_stack_prs=5
-pull=$(gh api "repos/$GH_REPO/pulls/$PR" --jq '[.base.ref, .base.repo.default_branch, .commits // 0,
+pull=$(gh api "repos/$GH_REPO/pulls/$PR" --jq '[.base.ref, .commits // 0,
     .stack.size // 0, .title] | map(tostring) | join(" ")')
-read -r base trunk total linked title <<<"$pull"
+read -r base total linked title <<<"$pull"
 header_form="^(${types// /|})(\([a-z0-9._/-]+\))?!?: [^ ]"
 # How to reword a commit, as section 4 of the skill says.
 reword=$(
@@ -191,16 +191,8 @@ $breaking."
 fi
 size=$(changed "repos/$GH_REPO/pulls/$PR/files?per_page=100" '.[]')
 [ "$size" -le "$max_pr_lines" ] || finding pr-size "#$PR changes $size lines against \`$base\`."
-# The stack holds as many pull requests as GitHub links in it, or as stand below #$PR, each heading
-# the base of the one above, whichever is more. The walk stops past the cap.
-stacked=1 ref=$base
-while [ "$ref" != "$trunk" ] && [ "$stacked" -le "$max_stack_prs" ]; do
-    ref=$(gh api -X GET "repos/$GH_REPO/pulls" -f head="${GH_REPO%%/*}:$ref" \
-        --jq '.[0].base.ref // empty')
-    [ -n "$ref" ] || break
-    stacked=$((stacked + 1))
-done
-[ "$stacked" -ge "$linked" ] || stacked=$linked
-[ "$stacked" -le "$max_stack_prs" ] ||
-    finding pr-stack-size "#$PR stands in a stack of at least $stacked pull requests."
+# The stack holds as many pull requests as GitHub links in it. A chain of bases that nothing links
+# is not counted.
+[ "$linked" -le "$max_stack_prs" ] ||
+    finding pr-stack-size "#$PR stands in a stack of $linked pull requests."
 report_finish
