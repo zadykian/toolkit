@@ -7,8 +7,8 @@ The fork tracks no upstream, and each skill carries a copy of that licence. The 
 `design@zadykian`, as [the README](../README.md#install) shows.
 
 The skills name each other, so `grill-with-docs` needs `grill-me` and
-`domain-modeling` installed with it. A repository names for it the paths of its glossary and its
-decision records, and its test command.
+`domain-modeling` installed with it, and `tdd` reads `codebase-design`. A repository names for it
+the paths of its glossary and its decision records, and its test command.
 
 ## grill-me
 
@@ -42,6 +42,18 @@ Two pages sit beside it. `DEEPENING.md` classes a cluster's dependencies into fo
 says how each is tested across the seam: mock only a true external one. `DESIGN-IT-TWICE.md` has
 several designers draw radically different interfaces in parallel, as `delegate` and `fan-out` say,
 and compares them.
+
+A repository names, in its CLAUDE.md or `.claude/rules/`, the path of its glossary and its test
+command. Where it names none, the glossary is `GLOSSARY.md`.
+
+## tdd
+
+Runs red-green slices at seams the user agrees: one test, then the code that passes it, and
+repeat. It says what a good test is, which anti-patterns to avoid, and what to mock. Where no user
+is present, the plan and the report state the seams. A commit holds a test with its code, as
+`atomic-commits` says. A refactor that eases the next test lands first, and a cleanup after green
+lands last, each in a commit of its own. `tests.md` has good and bad examples, and `mocking.md`
+follows the dependency categories of `codebase-design`: mock only a true external one.
 
 A repository names, in its CLAUDE.md or `.claude/rules/`, the path of its glossary and its test
 command. Where it names none, the glossary is `GLOSSARY.md`.
