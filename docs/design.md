@@ -1,14 +1,18 @@
 # design
 
-The `design` plugin sharpens a design before code is written: an interview that tests a plan, and a
-glossary and decision records kept as the talk goes. Its skills are a one-time fork of
+The `design` plugin sharpens a design before code is written. It has an interview that tests a
+plan, and a glossary and decision records kept as the talk goes. It adds a vocabulary of deep
+modules, test-first slices, and a scan for architecture to deepen. Its skills are a one-time fork of
 [mattpocock/skills](https://github.com/mattpocock/skills) at commit 4ae2317, under its MIT licence.
 The fork tracks no upstream, and each skill carries a copy of that licence. The bundle is
 `design@zadykian`, as [the README](../README.md#install) shows.
 
-The skills name each other, so `grill-with-docs` needs `grill-me` and
-`domain-modeling` installed with it, and `tdd` reads `codebase-design`. A repository names for it
-the paths of its glossary and its decision records, and its test command.
+The skills name each other, so `grill-with-docs` needs `grill-me` and `domain-modeling` installed
+with it, `tdd` needs `codebase-design`, and `improve-codebase-architecture` needs `codebase-design`,
+`grill-me` and `domain-modeling`. `grill-me`, `codebase-design` and `improve-codebase-architecture`
+defer to the lean bundle's `delegate`, and `codebase-design` to its `fan-out` too. `tdd` defers to
+the flow bundle's `atomic-commits`, and `grill-me` to its `issue`. A repository names for it the
+paths of its glossary and its decision records, and its test command.
 
 ## grill-me
 
@@ -57,3 +61,15 @@ follows the dependency categories of `codebase-design`: mock only a true externa
 
 A repository names, in its CLAUDE.md or `.claude/rules/`, the path of its glossary and its test
 command. Where it names none, the glossary is `GLOSSARY.md`.
+
+## improve-codebase-architecture
+
+Scans for deepening opportunities: shallow modules whose deletion would concentrate complexity.
+It starts at the hot spots of the recent history, or at the direction the user names, and applies
+the vocabulary and the deletion test of `codebase-design`. It writes the candidates as a Markdown
+report outside the work tree, gives the path, and lists them in chat. Once the user picks one, it
+grills through that one as `grill-me` says, and keeps the glossary and the decision records as
+`domain-modeling` says. It runs by hand only.
+
+A repository names, in its CLAUDE.md or `.claude/rules/`, the path of its glossary and its
+decision records. Where it names none, they are `GLOSSARY.md` and `docs/adr/`.

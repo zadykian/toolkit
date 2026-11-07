@@ -160,7 +160,7 @@
       "source": "./",
       "strict": false,
       "version": "6.4.1",
-      "description": "Skills that sharpen a design before code: a relentless interview, a glossary and decision records kept as the talk goes, and a model of the domain.",
+      "description": "Skills that sharpen a design before code: an interview, a glossary and decision records, a deep-module vocabulary, test-first slices and an architecture scan.",
       "author": {
         "name": "Aleksandr Zadykian",
         "url": "https://github.com/zadykian"
@@ -169,12 +169,13 @@
       "repository": "https://github.com/zadykian/toolkit",
       "license": "MIT",
       "category": "development",
-      "keywords": ["design", "interview", "glossary", "decision-records"],
+      "keywords": ["design", "interview", "glossary", "decision-records", "tdd", "architecture"],
       "skills": [
         "./skills/codebase-design",
         "./skills/domain-modeling",
         "./skills/grill-me",
         "./skills/grill-with-docs",
+        "./skills/improve-codebase-architecture",
         "./skills/tdd"
       ]
     }
