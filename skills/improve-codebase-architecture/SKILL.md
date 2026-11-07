@@ -38,8 +38,8 @@ the parts of the codebase that changed recently. Decide where to look before you
 
 Read the glossary, and the decision records of the area you touch, first.
 
-Then walk the codebase in a fresh context, as `delegate` says: read a small area inline, and hand
-a larger read to a subagent. Do not follow rigid heuristics. Explore, and note where you meet
+Then walk the codebase as `delegate` says: read a small area inline, and hand a larger read to a
+subagent. Do not follow rigid heuristics. Explore, and note where you meet
 friction:
 
 - Where does one concept take bouncing between many small modules?
@@ -54,9 +54,10 @@ complexity, or only move it? If it concentrates, that is the signal you want.
 
 ## 2. Present the candidates
 
-Write the report as Markdown to `REPORT.md` in the session's scratchpad, or another directory
-outside the repository, so that nothing lands in the work tree. Give its absolute path, and list
-the candidates in chat, each with its strength. Open nothing, and load nothing from the network.
+Write the report as Markdown to a new file each run, `architecture-review-TIMESTAMP.md`, so that
+no scan overwrites another. It goes in the session's scratchpad, or another directory outside the
+repository, so that nothing lands in the work tree. Give its absolute path, and list the
+candidates in chat, each with its strength. Open nothing, and load nothing from the network.
 
 For each candidate, the report gives:
 
