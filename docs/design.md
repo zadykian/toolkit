@@ -18,6 +18,11 @@ each with a recommended answer worded so that "yes" accepts it. Claude looks fac
 or through a subagent as `delegate` says, and puts only decisions to the user. The session ends
 when no branch is left, and Claude acts on it once the user agrees.
 
+## grill-with-docs
+
+Interviews the user as `grill-me` does, and keeps the domain model as `domain-modeling` does while
+it goes. Run as `/design:grill-with-docs`, by hand alone. It needs both of those skills.
+
 ## domain-modeling
 
 Builds and sharpens the project's domain model. It challenges a term against the glossary and
