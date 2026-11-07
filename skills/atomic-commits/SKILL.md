@@ -205,10 +205,10 @@ main ← feat/retry-1-gateway ← feat/retry-2-policy ← feat/retry-3-checkout
   fetch them and move each local branch to its remote one, the top branch last: `git fetch origin`,
   then `git switch -C <branch> origin/<branch>` for each.
 
-PR titles use the Conventional Commits header format too, because a squash merge turns the title
-into the commit on `main`. A PR containing a breaking commit has `!` in its title and the
-`BREAKING CHANGE:` footer at the end of its description. Only an attribution line may follow it,
-one that starts `Generated with` or `🤖 Generated with`.
+PR titles use the Conventional Commits header format too. The commit that lands a PR carries its
+title: a merge commit in its body, a squash merge as its header. A PR with a breaking commit has
+`!` in its title and the `BREAKING CHANGE:` footer at the end of its description. Only an
+attribution line may follow it, one that starts `Generated with` or `🤖 Generated with`.
 
 PR description, whose skeleton is [the template](pull_request_template.md) beside this file.
 GitHub offers it for a new pull request where a repository copies it to
