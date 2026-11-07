@@ -121,3 +121,5 @@ A good interface makes testing natural:
 
 - To deepen a cluster of modules given its dependencies, read [DEEPENING.md](DEEPENING.md): the
   dependency categories, seam discipline, and replacing tests rather than layering them.
+- To explore alternative interfaces, read [DESIGN-IT-TWICE.md](DESIGN-IT-TWICE.md): parallel
+  designs of one interface, compared on depth, locality and seam placement.
