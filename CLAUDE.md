@@ -1,9 +1,9 @@
 # toolkit
 
 Claude Code skills and hooks, and GitHub Actions that check each pull request against the same
-rules, at one version. The skills and hooks are a plugin marketplace, `zadykian`, of four
-bundles, `flow`, `docs`, `lint` and `lean`. [README.md](README.md) says what each skill and action does,
-how to install and pin them, and what a version's parts mean.
+rules, at one version. The skills and hooks are a plugin marketplace, `zadykian`, of five
+bundles, `flow`, `docs`, `lint`, `lean` and `design`. [README.md](README.md) says what each skill
+and action does, how to install and pin them, and what a version's parts mean.
 
 ## Layout
 

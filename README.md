@@ -4,32 +4,35 @@
 repository, and GitHub Actions that check each pull request against the same rules. The skills
 plan a change as an issue, commit it in small steps, and land the stack by GitHub's merge. They keep
 prose short, and the hooks lint each file as Claude edits it. The skills and hooks are a plugin
-marketplace, `zadykian`, of four bundles. They and the actions release at one version.
+marketplace, `zadykian`, of five bundles. They and the actions release at one version.
 
 ## The bundles
 
-| Bundle | Skill          | Run as                               | What it does                          |
-| ------ | -------------- | ------------------------------------ | ------------------------------------- |
-| flow   | atomic-commits | by Claude as it commits              | Small commits, stacks of small PRs    |
-| flow   | issue          | `/flow:issue [topic]`                | Plans a change, then files the issue  |
-| flow   | land           | `/flow:land PR... [vX.Y.Z]`, by hand | Lands a stack by merge, tags releases |
-| docs   | writing        | by Claude as it edits a file         | The policy for comments and docs      |
-| docs   | trim           | `/docs:trim FILE...`                 | Trims comments and docs to the policy |
-| lint   | split-file     | `/lint:split-file FILE`              | Splits a file over the line cap       |
-| lint   | banned-terms   | by Claude as it writes code or prose | Keeps vague names and fillers out     |
-| lint   | its hooks      | after each edit, and as Claude stops | Run the repository's own lint gates   |
-| lean   | cost           | `/lean:cost [SESSION...]`, by hand   | Reports what sessions cost, and why   |
-| lean   | delegate       | by Claude as it spawns a subagent    | When to hand off, to whom, the brief  |
-| lean   | fan-out        | by Claude as it writes a workflow    | Sizes review by risk, tiers agents    |
-| lean   | its hook       | before the Workflow tool             | Denies an agent with no tier          |
-| lean   | context        | by Claude in a long session          | Reads by range, checkpoints, compacts |
-| lean   | wait           | by Claude as it waits on work        | Backgrounds work, bounds a wait       |
-| lean   | its hook       | before the Bash tool                 | Denies an unbounded foreground poll   |
+| Bundle | Skill           | Run as                               | What it does                          |
+| ------ | --------------- | ------------------------------------ | ------------------------------------- |
+| flow   | atomic-commits  | by Claude as it commits              | Small commits, stacks of small PRs    |
+| flow   | issue           | `/flow:issue [topic]`                | Plans a change, then files the issue  |
+| flow   | land            | `/flow:land PR... [vX.Y.Z]`, by hand | Lands a stack by merge, tags releases |
+| docs   | writing         | by Claude as it edits a file         | The policy for comments and docs      |
+| docs   | trim            | `/docs:trim FILE...`                 | Trims comments and docs to the policy |
+| lint   | split-file      | `/lint:split-file FILE`              | Splits a file over the line cap       |
+| lint   | banned-terms    | by Claude as it writes code or prose | Keeps vague names and fillers out     |
+| lint   | its hooks       | after each edit, and as Claude stops | Run the repository's own lint gates   |
+| lean   | cost            | `/lean:cost [SESSION...]`, by hand   | Reports what sessions cost, and why   |
+| lean   | delegate        | by Claude as it spawns a subagent    | When to hand off, to whom, the brief  |
+| lean   | fan-out         | by Claude as it writes a workflow    | Sizes review by risk, tiers agents    |
+| lean   | its hook        | before the Workflow tool             | Denies an agent with no tier          |
+| lean   | context         | by Claude in a long session          | Reads by range, checkpoints, compacts |
+| lean   | wait            | by Claude as it waits on work        | Backgrounds work, bounds a wait       |
+| lean   | its hook        | before the Bash tool                 | Denies an unbounded foreground poll   |
+| design | grill-me        | `/design:grill-me`, or by Claude     | Interviews you on a plan, in rounds   |
+| design | grill-with-docs | `/design:grill-with-docs`, by hand   | Grills, and keeps glossary and ADRs   |
+| design | domain-modeling | by Claude as it names terms          | Sharpens terms, glossary and ADRs     |
 
 Claude Code names a bundle's skill after the bundle, as `/flow:land`. Claude also uses a skill
 unasked where its description fits the task, unless it runs by hand only. [flow](docs/flow.md),
-[docs](docs/docs.md), [lint](docs/lint.md) and [lean](docs/lean.md) say how each runs, and what a
-repository adds.
+[docs](docs/docs.md), [lint](docs/lint.md), [lean](docs/lean.md) and
+[design](docs/design.md) say how each runs, and what a repository adds.
 
 ## Install
 
@@ -61,7 +64,8 @@ the folder is trusted, and fetches the marketplace. It installs no bundle: each 
     "flow@zadykian": true,
     "docs@zadykian": true,
     "lint@zadykian": true,
-    "lean@zadykian": true
+    "lean@zadykian": true,
+    "design@zadykian": true
   }
 }
 ```
@@ -203,4 +207,6 @@ comment says what it changes.
 
 ## License
 
-[MIT](LICENSE).
+[MIT](LICENSE). The design bundle's skills are a one-time fork of the MIT-licensed
+[mattpocock/skills](https://github.com/mattpocock/skills) at commit 4ae2317. Each of them carries a
+copy of its licence.
