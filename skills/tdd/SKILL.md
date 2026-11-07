@@ -14,10 +14,11 @@ cycle. Read them before the loop and during it.
 
 ## The repository's rules
 
-The repository's CLAUDE.md and `.claude/rules/` name where its glossary lives, and its test
-command. They add to this skill and change none of it. Where they name none, the glossary is
-`GLOSSARY.md`. Read it, if it exists, so test names and interface terms match the domain's words.
-Respect the decision records of the area you touch.
+The repository's CLAUDE.md and `.claude/rules/` name where its glossary and its decision
+records live, and its test command. They add to this skill and change none of it. Where they name
+none, the glossary is `GLOSSARY.md` and the decision records are `docs/adr/`. Read the glossary, if
+it exists, so test names and interface terms match the domain's words. Respect the decision records
+of the area you touch.
 
 ## What a good test is
 
@@ -58,8 +59,8 @@ show. The skill is a reference to consult, not a session to run.
   code. An expected value comes from an independent source: a known literal, a worked example, the
   spec.
 - **Horizontal slicing**: writing all the tests first, then all the implementation. Bulk tests
-  check _imagined_ behaviour, so they test the _shape_ of the code, go blind to real changes, and fix
-  the structure of the tests before you understand the implementation. Work in **vertical
+  check _imagined_ behaviour, so they test the _shape_ of the code, go blind to real changes, and
+  fix the structure of the tests before you understand the implementation. Work in **vertical
   slices**: one test, then one implementation, and repeat. Each test is a **tracer bullet** that
   responds to what the last cycle taught you.
 

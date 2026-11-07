@@ -1,9 +1,8 @@
 # When to mock
 
-Mock only a true external dependency. [DEEPENING.md](../codebase-design/DEEPENING.md) lists the
-dependency categories, and the fourth is this one: a third-party service that you do not control, such
-as a payment or messaging provider. Time and randomness count with it, as they are
-not yours to control.
+Mock only a true external dependency. The deepening page of `codebase-design` lists the dependency
+categories, and the fourth is this one: a third-party service that you do not control, such as a
+payment or messaging provider. Time and randomness count with it, as they are not yours to control.
 
 In the other categories, do not mock. Use the real dependency, or a local stand-in for it:
 
