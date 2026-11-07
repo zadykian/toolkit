@@ -15,10 +15,11 @@ cycle. Read them before the loop and during it.
 ## The repository's rules
 
 The repository's CLAUDE.md and `.claude/rules/` name where its glossary and its decision
-records live, and its test command. They add to this skill and change none of it. Where they name
-none, the glossary is `GLOSSARY.md` and the decision records are `docs/adr/`. Read the glossary, if
-it exists, so test names and interface terms match the domain's words. Respect the decision records
-of the area you touch.
+records live, its test command, and the services its tests run, which that command starts and
+removes. They add to this skill and change none of it. Where they name none, the glossary is
+`GLOSSARY.md` and the decision records are `docs/adr/`. Read the glossary, if it exists, so test
+names and interface terms match the domain's words. Respect the decision records of the area you
+touch.
 
 ## What a good test is
 

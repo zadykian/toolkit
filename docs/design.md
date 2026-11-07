@@ -57,10 +57,12 @@ repeat. It says what a good test is, which anti-patterns to avoid, and what to m
 is present, the plan and the report state the seams. A commit holds a test with its code, as
 `atomic-commits` says. A refactor that eases the next test lands first, and a cleanup after green
 lands last, each in a commit of its own. `tests.md` has good and bad examples, and `mocking.md`
-follows the dependency categories of `codebase-design`: mock only a true external one.
+follows the dependency categories of `codebase-design`: mock only a true external one. I/O that the
+repository controls runs as the real service, in a throwaway instance of each run, which the test
+command starts and removes, in CI too.
 
-A repository names, in its CLAUDE.md or `.claude/rules/`, the path of its glossary and its test
-command. Where it names none, the glossary is `GLOSSARY.md`.
+A repository names, in its CLAUDE.md or `.claude/rules/`, the path of its glossary, its test
+command and the services its tests run. Where it names none, the glossary is `GLOSSARY.md`.
 
 ## improve-codebase-architecture
 
