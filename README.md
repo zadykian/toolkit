@@ -28,6 +28,7 @@ marketplace, `zadykian`, of five bundles. They and the actions release at one ve
 | design | grill-me        | `/design:grill-me`, or by Claude     | Interviews you on a plan, in rounds   |
 | design | grill-with-docs | `/design:grill-with-docs`, by hand   | Grills, and keeps glossary and ADRs   |
 | design | domain-modeling | by Claude as it names terms          | Sharpens terms, glossary and ADRs     |
+| design | codebase-design | by Claude as it designs a module     | Deep-module terms, and seam rules     |
 
 Claude Code names a bundle's skill after the bundle, as `/flow:land`. Claude also uses a skill
 unasked where its description fits the task, unless it runs by hand only. [flow](docs/flow.md),

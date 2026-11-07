@@ -171,6 +171,7 @@
       "category": "development",
       "keywords": ["design", "interview", "glossary", "decision-records"],
       "skills": [
+        "./skills/codebase-design",
         "./skills/domain-modeling",
         "./skills/grill-me",
         "./skills/grill-with-docs"
