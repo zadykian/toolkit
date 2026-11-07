@@ -13,27 +13,30 @@ its seam.
 Pure computation and in-memory state, with no I/O. It can always be deepened: merge the modules
 and test through the new interface. No adapter is needed.
 
-### 2. Local-substitutable
+### 2. Controlled I/O
 
-Dependencies with a local stand-in for tests, such as an embedded database or an in-memory file
-system. It can be deepened where the stand-in exists. The suite runs the deepened module against
-the stand-in. The seam is internal, and the module's external interface has no port.
+I/O that you control and can run for a test, such as a database, a file system or a message
+broker. It can always be deepened. The suite runs the deepened module against the real service, in
+a throwaway instance of its own, as `tdd` says. It never runs against an embedded or in-memory
+stand-in, whose behaviour differs from production's. The seam is internal, and the module's
+external interface has no port.
 
 ### 3. Remote but owned
 
 Your own services across a network, such as microservices or internal APIs. Define a port, an
 interface, at the seam. The deep module owns the logic, and the transport is injected as an
-adapter. Tests use an in-memory adapter, and production an HTTP, RPC or queue adapter.
+adapter. The production adapter, HTTP, RPC or a queue, is tested against the real service in a
+throwaway instance. Other tests may use an in-memory adapter that passes the same tests.
 
-Word the recommendation so: define a port at the seam. Give it an HTTP adapter for production and
-an in-memory adapter for tests. The logic then sits in one deep module, though it deploys across a
-network.
+Word the recommendation so: define a port at the seam. Give it an HTTP adapter for production,
+tested against the real service, and an in-memory adapter that passes the same tests. The logic
+then sits in one deep module, though it deploys across a network.
 
 ### 4. True external
 
 Third-party services that you do not control, such as a payment or messaging provider. The
 deepened module takes the dependency as an injected port, and tests give it a mock adapter. Mock
-only this category. In the others, prefer a real or local stand-in.
+only this category. In the others, use the real dependency.
 
 ## Seam discipline
 
