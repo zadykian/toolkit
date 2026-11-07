@@ -80,6 +80,7 @@ is right?"
 ### Update the glossary inline
 
 When a term settles, update the glossary there and then. Do not batch: capture each as it happens.
+Use the [glossary format](GLOSSARY-FORMAT.md).
 
 The glossary holds no implementation detail. Treat it as no spec, no scratch pad and no store for
 implementation decisions: a glossary alone.
