@@ -26,6 +26,8 @@ entirely, and the tests should not. A good test reads like a specification.
 "User can check out with a valid cart" says what capability exists. It survives a refactor, as it
 does not care about the internal structure.
 
+[tests.md](tests.md) has examples.
+
 ## Seams: where tests go
 
 A test lives at a **seam** as `codebase-design` defines it: the place where a module's interface
