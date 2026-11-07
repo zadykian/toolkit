@@ -170,7 +170,7 @@
       "license": "MIT",
       "category": "development",
       "keywords": ["design", "interview", "glossary", "decision-records"],
-      "skills": ["./skills/grill-me"]
+      "skills": ["./skills/domain-modeling", "./skills/grill-me"]
     }
   ]
 }
