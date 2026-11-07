@@ -41,11 +41,11 @@ format files, beside the skill, set what each holds.
 ## codebase-design
 
 Gives one vocabulary for the shape of code: module, interface, depth, seam, adapter, leverage and
-locality, and the rule that a deep module hides much behind a small interface. Tests cross that interface.
-Two pages sit beside it. `DEEPENING.md` classes a cluster's dependencies into four categories, and
-says how each is tested across the seam: mock only a true external one. `DESIGN-IT-TWICE.md` has
-several designers draw radically different interfaces in parallel, as `delegate` and `fan-out` say,
-and compares them.
+locality, and the rule that a deep module hides much behind a small interface. Tests cross that
+interface. Two pages sit beside it. `DEEPENING.md` classes a cluster's dependencies into four
+categories, and says how each is tested across the seam: mock only a true external one.
+`DESIGN-IT-TWICE.md` has several designers draw radically different interfaces in parallel, as
+`delegate` and `fan-out` say, and compares them.
 
 A repository names, in its CLAUDE.md or `.claude/rules/`, the path of its glossary and its test
 command. Where it names none, the glossary is `GLOSSARY.md`.
