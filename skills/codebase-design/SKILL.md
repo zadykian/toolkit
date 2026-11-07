@@ -77,3 +77,42 @@ When designing an interface, ask:
 - Can I simplify the parameters?
 - Can I hide more complexity inside?
 
+## Principles
+
+- **Depth belongs to the interface, not the implementation.** A deep module can be built of small,
+  swappable parts that stay out of its interface. It has internal seams, private to its
+  implementation and used by its own tests, besides the external seam at its interface.
+- **The deletion test.** Imagine deleting the module. If the complexity vanishes, it only passed
+  calls through. If the complexity reappears across many callers, it earned its keep.
+- **The interface is the test surface.** Callers and tests cross the same seam. A wish to test
+  past the interface means the module has the wrong shape.
+- **One adapter makes a hypothetical seam. Two make a real one.** Add a seam only where something
+  varies across it.
+
+## Designing for testability
+
+A good interface makes testing natural:
+
+1. **Accept dependencies, do not create them.** A function that takes its payment gateway as a
+   parameter is testable with a stand-in. One that builds a real gateway inside is not.
+2. **Return results, do not produce side effects.** A function that returns the discount for a
+   cart is testable by its result. One that subtracts the discount from the cart's total in place
+   can be checked only by reading the cart after.
+3. **Keep the surface small.** Fewer methods need fewer tests, and fewer parameters need less
+   setup.
+
+## Relationships
+
+- A module has exactly one interface, the surface it presents to callers and tests.
+- Depth is a property of a module, measured against its interface.
+- A seam is where a module's interface lives.
+- An adapter sits at a seam and satisfies the interface.
+- Depth gives leverage to callers and locality to maintainers.
+
+## Rejected framings
+
+- **Depth as the ratio of implementation lines to interface lines.** It rewards padding the
+  implementation. Depth here is leverage.
+- **"Interface" as a language's `interface` keyword, or a class's public methods.** Both are too
+  narrow, as the interface here holds every fact a caller must know.
+- **"Boundary".** The bounded context of domain-driven design uses it. Say seam or interface.
