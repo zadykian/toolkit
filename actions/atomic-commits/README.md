@@ -80,7 +80,7 @@ The sizes, as [the hard rules][rules] set them:
 The pull request's title, as [section 6][s6] sets it:
 
 - `pr-title`: the title is a Conventional Commits header, as `header`, `header-length` and
-  `description` check one, since a squash merge turns it into the commit that lands.
+  `description` check one, since the commit that lands the pull request carries it.
 - `pr-breaking`: where a commit is breaking, the title has a `!` too.
 
 GitHub lists the first 250 commits of a pull request alone. Past them, the `commit-count` finding

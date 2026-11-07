@@ -147,7 +147,7 @@ issue, each landing as a stack of its own. An inseparable change, such as a migr
 language, takes fewer and larger pull requests instead."
 stack=$skill#6-stack-mechanics-git--238
 rule pr-title 'The PR title is not a Conventional Commits header' "$stack" "Retitle it as a \
-commit header, as a squash merge turns the title into the commit that lands: \
+commit header, as the commit that lands the pull request carries its title: \
 \`gh pr edit $PR --title '<type>(<scope>): <description>'\`."
 rule pr-breaking 'A breaking commit, but no ! in the PR title' "$stack" "Put a \`!\` before the \
 title's colon, and end the description with a \`BREAKING CHANGE:\` footer: \
