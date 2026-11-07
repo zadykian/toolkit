@@ -4,7 +4,7 @@
 repository, and GitHub Actions that check each pull request against the same rules. The skills
 plan a change as an issue, commit it in small steps, and land the stack by GitHub's merge. They keep
 prose short, and the hooks lint each file as Claude edits it. The skills and hooks are a plugin
-marketplace, `zadykian`, of four bundles. They and the actions release at one version.
+marketplace, `zadykian`, of five bundles. They and the actions release at one version.
 
 ## The bundles
 
@@ -25,11 +25,12 @@ marketplace, `zadykian`, of four bundles. They and the actions release at one ve
 | lean   | context        | by Claude in a long session          | Reads by range, checkpoints, compacts |
 | lean   | wait           | by Claude as it waits on work        | Backgrounds work, bounds a wait       |
 | lean   | its hook       | before the Bash tool                 | Denies an unbounded foreground poll   |
+| design | grill-me       | `/design:grill-me`, or by Claude     | Interviews you on a plan, in rounds   |
 
 Claude Code names a bundle's skill after the bundle, as `/flow:land`. Claude also uses a skill
 unasked where its description fits the task, unless it runs by hand only. [flow](docs/flow.md),
-[docs](docs/docs.md), [lint](docs/lint.md) and [lean](docs/lean.md) say how each runs, and what a
-repository adds.
+[docs](docs/docs.md), [lint](docs/lint.md), [lean](docs/lean.md) and
+[design](docs/design.md) say how each runs, and what a repository adds.
 
 ## Install
 
@@ -61,7 +62,8 @@ the folder is trusted, and fetches the marketplace. It installs no bundle: each 
     "flow@zadykian": true,
     "docs@zadykian": true,
     "lint@zadykian": true,
-    "lean@zadykian": true
+    "lean@zadykian": true,
+    "design@zadykian": true
   }
 }
 ```
@@ -203,4 +205,6 @@ comment says what it changes.
 
 ## License
 
-[MIT](LICENSE).
+[MIT](LICENSE). The design bundle's skills are a one-time fork of the MIT-licensed
+[mattpocock/skills](https://github.com/mattpocock/skills) at commit 4ae2317. Each of them carries a
+copy of its licence.
