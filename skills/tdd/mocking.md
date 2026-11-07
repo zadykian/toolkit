@@ -4,14 +4,34 @@ Mock only a true external dependency. The deepening page of `codebase-design` li
 categories, and the fourth is this one: a third-party service that you do not control, such as a
 payment or messaging provider. Time and randomness count with it, as they are not yours to control.
 
-In the other categories, do not mock. Use the real dependency, or a local stand-in for it:
+In the other categories, do not mock. Use the real dependency:
 
 - In-process code: your own classes and modules, and any internal collaborator. Call them.
-- Local-substitutable code, such as a database or a file system: run against an embedded or
-  in-memory stand-in, in place of a mock.
-- A remote service that you own: put a port at the seam, and give tests an in-memory adapter.
+- I/O that you control, such as a database, a file system or a message broker: run the real
+  service, isolated, as the next section says. An embedded or in-memory stand-in is no substitute:
+  its dialect, transactions and limits differ from production's, so a test passes that production
+  fails.
+- A remote service that you own: put a port at the seam, and test its production adapter against
+  the real service, isolated. The module's other tests may use an in-memory adapter, where it
+  passes the same tests as the real one.
 
 Anything you control is not mocked.
+
+## Real services, isolated
+
+- Each run gets its own throwaway instance of each service, at the version production runs, such
+  as a Docker container started for the suite. A service that people or other runs share, such as
+  a team's development database, never serves a test.
+- The repository's one test command starts the services, and stops and removes them after, on a
+  pass and on a failure. No step is done by hand, and CI runs the same command.
+- Start each service once a run, not once a test, so that the loop stays fast. Each test then
+  starts from a known state of its own: a fresh schema, a rolled-back transaction, or a key prefix
+  no other test uses. No test depends on what another left.
+- Each test loads the data it needs. No test reads a copy of real data.
+- A file system needs no container: a temporary directory of the test's own is the real one.
+- Where no instance can run, the test is skipped and says why. A stand-in never takes its place.
+
+A network alone does not make a service yours: a third party's service is still mocked.
 
 ## Designing for mockability
 
