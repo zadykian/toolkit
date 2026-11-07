@@ -38,7 +38,7 @@ All three must hold:
 3. **A real trade-off.** There were genuine alternatives, and you picked one for specific reasons.
 
 An easy decision to reverse needs no record, as you will reverse it. One that is not surprising
-raises no question. One with no real alternative has nothing to record beyond "we did the obvious
+raises no question. One with no real alternative has nothing to record beyond "we made the obvious
 choice".
 
 ### What qualifies
