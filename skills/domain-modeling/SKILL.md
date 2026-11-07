@@ -93,4 +93,4 @@ Offer a record only when all three hold:
 2. **Surprising without context.** A future reader will ask why it came out this way.
 3. **A real trade-off.** There were genuine alternatives, and you picked one for specific reasons.
 
-Where any is missing, skip the record.
+Where any is missing, skip the record. Use the [decision record format](ADR-FORMAT.md).
