@@ -116,3 +116,8 @@ A good interface makes testing natural:
 - **"Interface" as a language's `interface` keyword, or a class's public methods.** Both are too
   narrow, as the interface here holds every fact a caller must know.
 - **"Boundary".** The bounded context of domain-driven design uses it. Say seam or interface.
+
+## Going deeper
+
+- To deepen a cluster of modules given its dependencies, read [DEEPENING.md](DEEPENING.md): the
+  dependency categories, seam discipline, and replacing tests rather than layering them.
