@@ -1,0 +1,79 @@
+---
+name: codebase-design
+description: >-
+  Give the shared vocabulary for deep modules: a lot of behaviour behind a small interface, at a
+  clean seam. Use when designing or improving a module's interface, finding where to deepen,
+  placing a seam, or making code easier to test, or when another skill needs the terms.
+---
+
+# Codebase design
+
+Design deep modules: a lot of behaviour behind a small interface, placed at a clean seam, and
+tested through that interface. Use this language wherever code is designed or restructured. The aim
+is leverage for callers, locality for maintainers and testability for all.
+
+## The repository's rules
+
+The repository's CLAUDE.md and `.claude/rules/` name where its glossary lives, and its test
+command. They add to this skill and change none of it. Where they name none, the glossary is
+`GLOSSARY.md`. Use the glossary's words for the domain, and this skill's for the design.
+
+## Glossary
+
+Use these terms exactly. Do not swap in "component", "service", "API" or "boundary", as one
+language is the point.
+
+- **Module**: anything with an interface and an implementation. It has no fixed scale: a
+  function, a class, a package or a slice across tiers. Avoid: unit, component, service.
+- **Interface**: everything a caller must know to use the module correctly. It holds the type
+  signature, and also invariants, ordering rules, error modes, required configuration and
+  performance traits. Avoid: API, signature, which name only the type-level surface.
+- **Implementation**: what is inside a module, its body of code. It differs from an adapter. A
+  small adapter can have a large implementation, such as a database repository. A large adapter
+  can have a small one, such as an in-memory fake. Say "adapter" when the seam is the topic, and
+  "implementation" otherwise.
+- **Depth**: leverage at the interface, or how much behaviour a caller or test exercises per unit
+  of interface it must learn. A module is deep when much behaviour sits behind a small interface,
+  and shallow when the interface is nearly as complex as the implementation.
+- **Seam**: a place where you can change behaviour without editing in that place, and so the
+  location of a module's interface. Where the seam goes is a design decision apart from what sits
+  behind it. Avoid: boundary, which the bounded context of domain-driven design already uses.
+- **Adapter**: any code that satisfies an interface at a seam. It names a role, the slot
+  it fills, and not what is inside.
+- **Leverage**: what callers get from depth, or more capability per unit of interface. One
+  implementation pays back across many call sites and tests.
+- **Locality**: what maintainers get from depth. Change, bugs, knowledge and checks gather in one
+  place, so a fix made once holds everywhere.
+
+## Deep and shallow
+
+A deep module has a small interface, with few methods and simple parameters, over a deep
+implementation that hides the complex logic:
+
+```text
++-------------------------+
+|     Small interface     |   few methods, simple parameters
++-------------------------+
+|                         |
+|   Deep implementation   |   complex logic hidden
+|                         |
++-------------------------+
+```
+
+A shallow module has a large interface over a thin implementation that passes calls through.
+Avoid it:
+
+```text
++-------------------------------------+
+|          Large interface            |   many methods, complex parameters
++-------------------------------------+
+|  Thin implementation                |   only passes through
++-------------------------------------+
+```
+
+When designing an interface, ask:
+
+- Can I reduce the number of methods?
+- Can I simplify the parameters?
+- Can I hide more complexity inside?
+
