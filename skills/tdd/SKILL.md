@@ -26,7 +26,7 @@ entirely, and the tests should not. A good test reads like a specification.
 "User can check out with a valid cart" says what capability exists. It survives a refactor, as it
 does not care about the internal structure.
 
-[tests.md](tests.md) has examples.
+[tests.md](tests.md) has examples, and [mocking.md](mocking.md) says what to mock.
 
 ## Seams: where tests go
 
