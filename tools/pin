@@ -1,9 +1,10 @@
 #!/bin/sh
 # Pins a repository's actions, marketplace and templates to one release of the toolkit:
 #
-#   tools/pin vX.Y.Z DIR
+#   tools/pin [--version vX.Y.Z] DIR
 #
-# The tag vX.Y.Z of this script's repository names the commit, SHA. In DIR's workflows, each step
+# The tag vX.Y.Z of this script's repository names the commit, SHA. Without --version, it pins
+# the last release, the highest tag of the form vX.Y.Z. In DIR's workflows, each step
 # of an action of the toolkit, or of zadykian/actions before it, becomes
 # `zadykian/toolkit/actions/NAME@SHA # vX.Y.Z`. A step of an action that SHA lacks, one the
 # release removed, fails a check: pinned, it would fail to run. DIR's .claude/settings.json gives
@@ -22,10 +23,11 @@
 # Piped to sh, it needs no clone of the toolkit:
 #
 #   curl -fsSL https://raw.githubusercontent.com/zadykian/toolkit/main/tools/pin |
-#       sh -s -- vX.Y.Z DIR
+#       sh -s -- [--version vX.Y.Z] DIR
 #
 # So run, it clones the tag vX.Y.Z of TOOLKIT_URL, https://github.com/zadykian/toolkit where unset,
-# into a directory it removes, and runs that release's own tools/pin on DIR.
+# into a directory it removes, and runs that release's own tools/pin on DIR. A release before the
+# one that added --version takes no options, so a pipe cannot pin it.
 
 set -eu
 
@@ -168,30 +170,57 @@ skills/issue/config.yml .github/ISSUE_TEMPLATE/config.yml
 EOF
 }
 
-# fetch clones the tag $1 of the toolkit, and runs its tools/pin on the directory $2.
+# latest prints the highest tag of the form vX.Y.Z of the tags on stdin, one to a line.
+latest() {
+    grep -Ex "v$semver" | sort -V | tail -n 1
+}
+
+# fetch clones the tag $version of the toolkit, the last release where unset, and runs its
+# tools/pin on the directory $dir.
 fetch() {
     url=${TOOLKIT_URL:-https://github.com/zadykian/toolkit}
+    if [ -z "$version" ]; then
+        tags=$(git ls-remote --tags --refs "$url") || die "cannot list the tags of $url"
+        version=$(printf '%s\n' "$tags" | sed 's|.*refs/tags/||' | latest)
+        [ -n "$version" ] || die "no release in $url"
+    fi
     clone=$(mktemp -d)
     trap 'rm -rf "$clone"' EXIT
     trap 'exit 1' HUP INT TERM
-    git clone -q -c advice.detachedHead=false --depth 1 --branch "$1" "$url" "$clone" ||
-        die "no tag $1 in $url"
-    sh "$clone/tools/pin" "$1" "$2"
+    git clone -q -c advice.detachedHead=false --depth 1 --branch "$version" "$url" "$clone" ||
+        die "no tag $version in $url"
+    sh "$clone/tools/pin" --version "$version" "$dir"
 }
 
 main() {
-    [ $# = 2 ] || die "usage: tools/pin vX.Y.Z DIR"
-    version=$1
-    printf '%s\n' "$version" | grep -Eqx "v$semver" || die "$version is not of the form vX.Y.Z"
+    usage='usage: tools/pin [--version vX.Y.Z] DIR'
+    version=''
+    while [ $# -gt 0 ]; do
+        case $1 in
+        --version)
+            [ $# -ge 2 ] || die "$usage"
+            version=$2
+            shift 2
+            ;;
+        -*) die "$usage" ;;
+        *) break ;;
+        esac
+    done
+    [ $# = 1 ] || die "$usage"
+    dir=$1
+    [ -z "$version" ] || printf '%s\n' "$version" | grep -Eqx "v$semver" ||
+        die "$version is not of the form vX.Y.Z"
     # Piped to sh, the script is no file of a clone.
     if [ "${0##*/}" != pin ] || [ ! -f "$0" ]; then
-        fetch "$@"
+        fetch
         return
     fi
     root=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
+    [ -n "$version" ] || version=$(git -C "$root" tag -l | latest)
+    [ -n "$version" ] || die "no release in $root: git fetch --tags, then run it again"
     sha=$(git -C "$root" rev-parse -q --verify "refs/tags/$version^{commit}") ||
         die "no tag $version in $root: git fetch --tags, then run it again"
-    CDPATH='' cd -- "$2" 2>/dev/null || die "no directory $2"
+    CDPATH='' cd -- "$dir" 2>/dev/null || die "no directory $dir"
     tmp=$(mktemp -d)
     trap 'rm -rf "$tmp"' EXIT
     trap 'exit 1' HUP INT TERM
@@ -199,14 +228,14 @@ main() {
     workflows
     released
     [ -s "$tmp/steps" ] || [ -f "$settings" ] ||
-        die "$2 has no $settings, and no workflow that uses an action of the toolkit"
+        die "$dir has no $settings, and no workflow that uses an action of the toolkit"
     marketplace
     templates
     while IFS= read -r file; do
         mkdir -p "${file%/*}"
         cat "$tmp/new/$file" >"$file"
     done <"$tmp/staged"
-    [ -s "$tmp/changes" ] || printf '%s pins %s already\n' "$2" "$version" >"$tmp/changes"
+    [ -s "$tmp/changes" ] || printf '%s pins %s already\n' "$dir" "$version" >"$tmp/changes"
     cat "$tmp/changes"
 }
 
