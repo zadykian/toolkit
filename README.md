@@ -209,6 +209,18 @@ own `tools/pin`. From a clone of this repository that has the tag,
 `tools/pin [--version vX.Y.Z] DIR` pins the repository whose work tree is `DIR`. Its header
 comment says what it changes.
 
+With `--pr`, it pins the `main` of `DIR`'s `origin` instead, on a branch `chore/pin-vX.Y.Z`, and
+opens a pull request of it into `main` with gh. `DIR`'s work tree stays unchanged. So one run pins
+each repository whose work tree is a directory of `~/src`:
+
+```sh
+pin=$(mktemp)
+curl -fsSL https://raw.githubusercontent.com/zadykian/toolkit/main/tools/pin -o "$pin"
+for dir in ~/src/*/; do
+    sh "$pin" --pr "$dir"
+done
+```
+
 ## License
 
 [MIT](LICENSE). The design bundle's skills are a one-time fork of the MIT-licensed

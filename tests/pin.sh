@@ -149,7 +149,7 @@ prints 'no tag v1.2.4 in'
 prints 'git fetch --tags'
 pin v1.2.3
 exits 1
-prints 'usage: tools/pin [--version vX.Y.Z] DIR'
+prints 'usage: tools/pin [--version vX.Y.Z] [--pr] DIR'
 
 setup pins-a-source-of-one-line-once
 start

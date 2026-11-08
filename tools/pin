@@ -1,7 +1,7 @@
 #!/bin/sh
 # Pins a repository's actions, marketplace and templates to one release of the toolkit:
 #
-#   tools/pin [--version vX.Y.Z] DIR
+#   tools/pin [--version vX.Y.Z] [--pr] DIR
 #
 # The tag vX.Y.Z of this script's repository names the commit, SHA. Without --version, it pins
 # the last release, the highest tag of the form vX.Y.Z. In DIR's workflows, each step
@@ -20,10 +20,14 @@
 # writes nothing. Each line it changes goes to stdout, as PATH:LINE: TEXT, and each template it
 # writes as PATH:1: vX.Y.Z:SOURCE, its source as git show names it. It needs git and jq.
 #
+# With --pr, it pins the main of DIR's origin, and leaves DIR's work tree as it is. In a work tree
+# of its own, it commits each file it changes to the branch chore/pin-vX.Y.Z, pushes the branch to
+# origin, and opens a pull request of it into main with gh. Where nothing changes, it opens none.
+#
 # Piped to sh, it needs no clone of the toolkit:
 #
 #   curl -fsSL https://raw.githubusercontent.com/zadykian/toolkit/main/tools/pin |
-#       sh -s -- [--version vX.Y.Z] DIR
+#       sh -s -- [--version vX.Y.Z] [--pr] DIR
 #
 # So run, it clones the tag vX.Y.Z of TOOLKIT_URL, https://github.com/zadykian/toolkit where unset,
 # into a directory it removes, and runs that release's own tools/pin on DIR. A release before the
@@ -170,6 +174,49 @@ skills/issue/config.yml .github/ISSUE_TEMPLATE/config.yml
 EOF
 }
 
+# branch makes the branch $branch of the repository DIR, from its origin's main, in the work tree
+# $tree of its own, and enters it.
+branch() {
+    command -v gh >/dev/null || die "no gh"
+    repo=$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null) || die "$dir is no git work tree"
+    branch=chore/pin-$version
+    git -C "$repo" fetch -q origin main || die "$repo: cannot fetch the main of origin"
+    git -C "$repo" worktree add -q -b "$branch" "$tmp/tree" FETCH_HEAD 2>/dev/null ||
+        die "$repo has a branch $branch already: delete it, then run it again"
+    tree=$tmp/tree
+    cd "$tree"
+}
+
+# propose commits each file staged to $branch, pushes it to origin, and opens a pull request of it
+# into main. Where no file is staged, it opens none.
+propose() {
+    [ -s "$tmp/staged" ] || return 0
+    title="chore: pin the toolkit to $version"
+    while IFS= read -r file; do git add -- "$file"; done <"$tmp/staged"
+    git commit -q -m "$title" || die "cannot commit to $branch"
+    git push -q -u origin "$branch" ||
+        die "cannot push $branch to origin: delete it there, then run it again"
+    {
+        printf 'Pins the actions, the marketplace and the templates to %s. It changes:\n\n' "$version"
+        printf '```text\n'
+        cat "$tmp/changes"
+        printf '```\n'
+    } >"$tmp/body"
+    gh pr create --base main --head "$branch" --title "$title" --body-file "$tmp/body" ||
+        die "cannot open a pull request of $branch"
+}
+
+# clean removes $tmp, and the work tree and the local branch of --pr, which origin keeps once
+# pushed.
+clean() {
+    if [ -n "$tree" ]; then
+        cd /
+        git -C "$repo" worktree remove --force "$tree" 2>/dev/null || :
+        git -C "$repo" branch -q -D "$branch" 2>/dev/null || :
+    fi
+    rm -rf "$tmp"
+}
+
 # latest prints the highest tag of the form vX.Y.Z of the tags on stdin, one to a line.
 latest() {
     grep -Ex "v$semver" | sort -V | tail -n 1
@@ -189,12 +236,16 @@ fetch() {
     trap 'exit 1' HUP INT TERM
     git clone -q -c advice.detachedHead=false --depth 1 --branch "$version" "$url" "$clone" ||
         die "no tag $version in $url"
-    sh "$clone/tools/pin" --version "$version" "$dir"
+    if [ "$pr" = true ]; then
+        sh "$clone/tools/pin" --version "$version" --pr "$dir"
+    else
+        sh "$clone/tools/pin" --version "$version" "$dir"
+    fi
 }
 
 main() {
-    usage='usage: tools/pin [--version vX.Y.Z] DIR'
-    version=''
+    usage='usage: tools/pin [--version vX.Y.Z] [--pr] DIR'
+    version='' pr=false tree=''
     while [ $# -gt 0 ]; do
         case $1 in
         --version)
@@ -202,6 +253,7 @@ main() {
             version=$2
             shift 2
             ;;
+        --pr) pr=true && shift ;;
         -*) die "$usage" ;;
         *) break ;;
         esac
@@ -220,10 +272,11 @@ main() {
     [ -n "$version" ] || die "no release in $root: git fetch --tags, then run it again"
     sha=$(git -C "$root" rev-parse -q --verify "refs/tags/$version^{commit}") ||
         die "no tag $version in $root: git fetch --tags, then run it again"
-    CDPATH='' cd -- "$dir" 2>/dev/null || die "no directory $dir"
+    [ -d "$dir" ] || die "no directory $dir"
     tmp=$(mktemp -d)
-    trap 'rm -rf "$tmp"' EXIT
+    trap clean EXIT
     trap 'exit 1' HUP INT TERM
+    if [ "$pr" = true ]; then branch; else CDPATH='' cd -- "$dir"; fi
     touch "$tmp/steps" "$tmp/changes" "$tmp/staged"
     workflows
     released
@@ -237,6 +290,7 @@ main() {
     done <"$tmp/staged"
     [ -s "$tmp/changes" ] || printf '%s pins %s already\n' "$dir" "$version" >"$tmp/changes"
     cat "$tmp/changes"
+    [ "$pr" = false ] || propose
 }
 
 main "$@"
