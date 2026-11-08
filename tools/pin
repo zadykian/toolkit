@@ -196,18 +196,22 @@ propose() {
     git commit -q -m "$title" || die "cannot commit to $branch"
     git push -q -u origin "$branch" ||
         die "cannot push $branch to origin: delete it there, then run it again"
+    url=${TOOLKIT_URL:-https://github.com/zadykian/toolkit}/releases/tag/$version
     {
-        printf 'Pins the actions, the marketplace and the templates to %s. It changes:\n\n' "$version"
-        printf '```text\n'
-        cat "$tmp/changes"
-        printf '```\n'
+        printf '# %s\n\n## Problem\n\nThe repository pins a release of the toolkit other than' "$title"
+        printf ' [%s](%s), so its checks and skills miss its rules.\n\n## Changes\n\n' "$version" "$url"
+        ! grep -q '^\.github/workflows/' "$tmp/changes" ||
+            printf '%s\n' "- Pins each action of the toolkit in the workflows to $version's commit."
+        ! grep -q "^$settings:" "$tmp/changes" ||
+            printf '%s\n' "- Pins the toolkit's marketplace in \`$settings\` to $version."
+        ! grep -q ":1: $version:" "$tmp/changes" ||
+            printf '%s\n' "- Writes the pull request and issue templates of $version."
     } >"$tmp/body"
     gh pr create --base main --head "$branch" --title "$title" --body-file "$tmp/body" ||
         die "cannot open a pull request of $branch"
 }
 
-# clean removes $tmp, and the work tree and the local branch of --pr, which origin keeps once
-# pushed.
+# clean removes $tmp, and the work tree and the local branch of --pr, which origin keeps.
 clean() {
     if [ -n "$tree" ]; then
         cd /

@@ -53,6 +53,13 @@ got=$(git -C "$FAKE/origin" show chore/pin-v1.2.3:.github/workflows/rules.yml)
 [ "$(git -C "$FAKE/app" status --porcelain)" = ' M .github/workflows/rules.yml' ] ||
     fail 'it changed the work tree of app'
 tidy
+# The description keeps to the rules of pr-description.
+answer repos/o/r/pulls/1 "$(pull "$(jq -n --rawfile body "$FAKE/body" \
+    '{body: $body, title: "chore: pin the toolkit to v1.2.3"}')")"
+check pr-description
+warnings 0
+grep -qx -- "- Pins each action of the toolkit in the workflows to v1.2.3's commit." "$FAKE/body" ||
+    fail "it described: $(cat "$FAKE/body")"
 
 setup opens-no-pull-request-where-origins-main-pins-already
 start
