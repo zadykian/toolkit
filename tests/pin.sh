@@ -66,19 +66,19 @@ skills/issue/config.yml .github/ISSUE_TEMPLATE/config.yml
 EOF
 }
 
-# pin runs toolkit's tools/pin at the version $1 on app, and keeps app in old on the first run.
+# pin runs toolkit's tools/pin on app with the options $@, and keeps app in old on the first run.
 pin() {
     [ -d "$FAKE/old" ] || cp -R "$FAKE/app" "$FAKE/old"
-    step "$FAKE/toolkit/tools/pin" "$1" "$FAKE/app"
+    step "$FAKE/toolkit/tools/pin" "$@" "$FAKE/app"
 }
 
-# piped runs tools/pin as sh runs it from a pipe, at the version $1 on app: it clones toolkit.
+# piped runs tools/pin as sh runs it from a pipe, on app with the options $@: it clones toolkit.
 piped() {
     [ -d "$FAKE/old" ] || cp -R "$FAKE/app" "$FAKE/old"
-    # The inner sh expands $0, $1 and $2: the script, the version and app.
+    # The inner sh expands $0 and $@: the script, and the options and app.
     # shellcheck disable=SC2016
-    step TOOLKIT_URL="file://$FAKE/toolkit" sh -c 'sh -s -- "$1" "$2" <"$0"' "$ROOT/tools/pin" \
-        "$1" "$FAKE/app"
+    step TOOLKIT_URL="file://$FAKE/toolkit" sh -c 'sh -s -- "$@" <"$0"' "$ROOT/tools/pin" \
+        "$@" "$FAKE/app"
 }
 
 # changes checks that app's file $1 differs from old's as the diff on stdin says.
@@ -115,30 +115,47 @@ EOF
 
 setup pins-the-workflows-once
 start
-pin v1.2.3
+pin --version v1.2.3
 exits 0
 prints ".github/workflows/rules.yml:5: - uses: zadykian/toolkit/actions/x@$SHA # v1.2.3"
 prints 'no .claude/settings.json, so the workflows alone are pinned'
-pin v1.2.3
+pin --version v1.2.3
 exits 0
 prints "$FAKE/app pins v1.2.3 already"
 pinned "$SHA" v1.2.3
 
+setup pins-the-last-release-without-a-version
+start
+git -C "$FAKE/toolkit" commit -q --allow-empty -m 'feat: grow'
+git -C "$FAKE/toolkit" tag v1.10.0
+git -C "$FAKE/toolkit" tag v2.0.0-rc.1
+SHA=$(git -C "$FAKE/toolkit" rev-parse HEAD)
+pin
+exits 0
+pinned "$SHA" v1.10.0
+rm -r "$FAKE/app" && mv "$FAKE/old" "$FAKE/app"
+piped
+exits 0
+pinned "$SHA" v1.10.0
+
 setup refuses-a-version-it-cannot-resolve
 start
-pin 1.2.3
+pin --version 1.2.3
 exits 1
 prints '1.2.3 is not of the form vX.Y.Z'
-pin v1.2.4
+pin --version v1.2.4
 exits 1
 prints 'no tag v1.2.4 in'
 prints 'git fetch --tags'
+pin v1.2.3
+exits 1
+prints 'usage: tools/pin [--version vX.Y.Z] [--pr] DIR'
 
 setup pins-a-source-of-one-line-once
 start
 settings '      "source": { "source": "github", "repo": "zadykian/skills" },'
-pin v1.2.3
-pin v1.2.3
+pin --version v1.2.3
+pin --version v1.2.3
 exits 0
 prints 'pins v1.2.3 already'
 changes .claude/settings.json <<'EOF'
@@ -151,7 +168,7 @@ EOF
 setup refuses-settings-without-the-toolkit-and-writes-nothing
 start
 settings '      "source": { "source": "github", "repo": "o/skills" },'
-pin v1.2.3
+pin --version v1.2.3
 exits 1
 prints 'names 0 marketplaces of zadykian/toolkit or zadykian/skills, not one'
 changes .github/workflows/rules.yml </dev/null
@@ -161,7 +178,7 @@ start
 git -C "$FAKE/toolkit" rm -rq actions/y
 git -C "$FAKE/toolkit" commit -q -m 'feat(y)!: remove the y action'
 git -C "$FAKE/toolkit" tag v2.0.0
-pin v2.0.0
+pin --version v2.0.0
 exits 1
 prints '.github/workflows/rules.yml:7: v2.0.0 has no action y: remove the step, as the release'
 changes .github/workflows/rules.yml </dev/null
@@ -172,14 +189,14 @@ settings '      "source": {
         "source": "github",
         "repo": "zadykian/skills"
       },'
-pin v1.2.3
+pin --version v1.2.3
 exits 0
 prints '.claude/settings.json:10: "ref": "v1.2.3"'
 sourced v1.2.3
 git -C "$FAKE/toolkit" commit -q --allow-empty -m 'fix: mend it'
 git -C "$FAKE/toolkit" tag v1.3.0
 SHA=$(git -C "$FAKE/toolkit" rev-parse HEAD)
-pin v1.3.0
+pin --version v1.3.0
 exits 0
 pinned "$SHA" v1.3.0
 sourced v1.3.0
@@ -187,7 +204,7 @@ sourced v1.3.0
 setup writes-the-templates-of-a-tag
 start
 templates v1.3.0
-pin v1.3.0
+pin --version v1.3.0
 exits 0
 prints '.github/pull_request_template.md:1: v1.3.0:skills/atomic-commits/pull_request_template.md'
 prints '.github/ISSUE_TEMPLATE/change.yml:1: v1.3.0:skills/issue/change.yml'
@@ -197,8 +214,8 @@ copied
 setup writes-the-templates-once
 start
 templates v1.3.0
-pin v1.3.0
-pin v1.3.0
+pin --version v1.3.0
+pin --version v1.3.0
 exits 0
 prints "$FAKE/app pins v1.3.0 already"
 copied
@@ -206,7 +223,7 @@ copied
 setup writes-no-template-that-the-tag-lacks
 start
 echo '## Mine' >"$FAKE/app/.github/pull_request_template.md"
-pin v1.2.3
+pin --version v1.2.3
 exits 0
 changes .github/pull_request_template.md </dev/null
 [ ! -e "$FAKE/app/.github/ISSUE_TEMPLATE" ] || fail 'it wrote .github/ISSUE_TEMPLATE'
@@ -215,7 +232,7 @@ setup overwrites-a-template-of-other-text
 start
 templates v1.3.0
 echo '## Mine' >"$FAKE/app/.github/pull_request_template.md"
-pin v1.3.0
+pin --version v1.3.0
 exits 0
 prints '.github/pull_request_template.md:1: v1.3.0:skills/atomic-commits/pull_request_template.md'
 changes .github/pull_request_template.md <<'EOF'
@@ -229,7 +246,7 @@ setup writes-no-template-where-a-check-fails
 start
 git -C "$FAKE/toolkit" rm -rq actions/y
 templates v2.0.0
-pin v2.0.0
+pin --version v2.0.0
 exits 1
 prints 'v2.0.0 has no action y'
 diff -r "$FAKE/old" "$FAKE/app" || fail 'it wrote a file'
@@ -239,7 +256,7 @@ start
 rm -r "$FAKE/app/.github"
 settings '      "source": { "source": "github", "repo": "zadykian/toolkit" },'
 templates v1.3.0
-pin v1.3.0
+pin --version v1.3.0
 exits 0
 copied
 
@@ -247,7 +264,7 @@ setup pins-from-a-pipe-by-a-clone-of-the-tag
 start
 settings '      "source": { "source": "github", "repo": "zadykian/toolkit" },'
 templates v1.3.0
-piped v1.3.0
+piped --version v1.3.0
 exits 0
 prints '.claude/settings.json:7: "source": { "source": "github", "repo": "zadykian/toolkit", "ref": "v1.3.0" },'
 prints '.github/ISSUE_TEMPLATE/change.yml:1: v1.3.0:skills/issue/change.yml'
@@ -255,7 +272,7 @@ copied
 
 setup refuses-from-a-pipe-a-tag-it-cannot-clone
 start
-piped v9.9.9
+piped --version v9.9.9
 exits 1
 prints "no tag v9.9.9 in file://$FAKE/toolkit"
 diff -r "$FAKE/old" "$FAKE/app" || fail 'it wrote a file'

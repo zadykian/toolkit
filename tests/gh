@@ -11,7 +11,8 @@
 # the fields or the JSON of FILE, a line of JSON in $FAKE/writes. `gh pr comment N --body BODY`
 # writes as `gh api repos/$GH_REPO/issues/N/comments -f body=BODY` does. A call that tests/run's
 # refuse names fails as GitHub's refusal does, and writes nothing. `gh release create ...
-# --notes-file FILE` leaves FILE in $FAKE/notes. $FAKE/calls logs every call.
+# --notes-file FILE` leaves FILE in $FAKE/notes. `gh pr create ...` prints the URL of pull request
+# #2. $FAKE/calls logs every call.
 
 set -euo pipefail
 
@@ -25,8 +26,12 @@ if [ "${1-} ${2-}" = 'release create' ]; then
     while [ "$1" != --notes-file ]; do shift; done
     cp -- "$2" "$FAKE/notes"
     exit 0
+elif [ "${1-} ${2-}" = 'pr create' ]; then
+    echo https://github.com/o/r/pull/2
+    exit 0
 elif [ "${1-}" != api ]; then
-    echo "gh: the fake answers gh api, gh pr comment and gh release create alone, not gh $*" >&2
+    echo "gh: the fake answers gh api, gh pr comment, gh pr create and gh release create alone," \
+        "not gh $*" >&2
     exit 1
 fi
 shift

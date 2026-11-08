@@ -201,12 +201,25 @@ a release. It writes the release's templates too. Run it in the repository's wor
 clone of this one:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/zadykian/toolkit/main/tools/pin | sh -s -- vX.Y.Z .
+curl -fsSL https://raw.githubusercontent.com/zadykian/toolkit/main/tools/pin | sh -s -- .
 ```
 
-It clones the tag, and runs that release's own `tools/pin`. From a clone of this repository that
-has the tag, `tools/pin vX.Y.Z DIR` pins the repository whose work tree is `DIR`. Its header
+It clones the last release's tag, or the one `--version vX.Y.Z` names, and runs that release's
+own `tools/pin`. From a clone of this repository that has the tag,
+`tools/pin [--version vX.Y.Z] DIR` pins the repository whose work tree is `DIR`. Its header
 comment says what it changes.
+
+With `--pr`, it pins the `main` of `DIR`'s `origin` instead, on a branch `chore/pin-vX.Y.Z`, and
+opens a pull request of it into `main` with gh. `DIR`'s work tree stays unchanged. So one run pins
+each repository whose work tree is a directory of `~/src`:
+
+```sh
+pin=$(mktemp)
+curl -fsSL https://raw.githubusercontent.com/zadykian/toolkit/main/tools/pin -o "$pin"
+for dir in ~/src/*/; do
+    sh "$pin" --pr "$dir"
+done
+```
 
 ## License
 
