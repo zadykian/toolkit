@@ -86,10 +86,8 @@ Each pull request's signed commits land as they are, under a merge commit that G
 A rebase merge would not do: GitHub signs none of the commits it writes. The skill needs:
 
 - `gh`, logged in, with the [gh-stack][gh-stack] extension: `gh extension install github/gh-stack`;
-- a repository whose settings allow merge commits;
-- a ruleset on the default branch that allows the merge method alone and requires signed commits,
-  with no "Require linear history" rule;
-- that ruleset to require branches to be up to date, so a merge's tree is the tree CI checked.
+- a repository with the merge settings and the ruleset that [repo-settings](#repo-settings)
+  checks.
 
 The repository's CLAUDE.md names the facts of how its changes land, which add to the skill's
 steps and change none of them:
@@ -98,6 +96,31 @@ steps and change none of them:
 - a gate before the merge, such as a check of the pull request's text;
 - the release: its workflow, and whether the skill pushes the tag.
 
+## repo-settings
+
+Checks a repository's settings against those that the bundle's skills rest on, reports each
+difference, and applies them once the maintainer approves. It runs by hand only, from a clone,
+with a token that administers the repository:
+
+```text
+/flow:repo-settings
+```
+
+The settings:
+
+- the merge: merge commits alone, with no squash, no rebase merge and no "Update branch" button,
+  and merged branches deleted, which retargets the stack above;
+- Actions: a token that reads by default, and approves no pull request;
+- a ruleset on the default branch, [main.json][ruleset-main]. It requires signed commits, pull
+  requests by the merge method alone with their conversations resolved, and the short jobs of
+  [ci](#ci) as checks. It requires branches up to date too, so that a merge's tree is the tree CI
+  checked. It has no "Require linear history" rule, which refuses a merge commit;
+- a ruleset on the tags `v*`, [tags.json][ruleset-tags], which blocks their update and deletion,
+  and immutable releases where the repository publishes release files.
+
+The repository's CLAUDE.md names its short jobs, the reviews it asks for, and whether it
+publishes release files.
+
 [cc]: https://www.conventionalcommits.org/en/v1.0.0/
 [ac-action]: ../actions/atomic-commits
 [pd-action]: ../actions/pr-description
@@ -105,3 +128,5 @@ steps and change none of them:
 [pr-template]: ../skills/atomic-commits/pull_request_template.md
 [issue-form]: ../skills/issue/change.yml
 [gh-stack]: https://github.com/github/gh-stack
+[ruleset-main]: ../skills/repo-settings/main.json
+[ruleset-tags]: ../skills/repo-settings/tags.json
