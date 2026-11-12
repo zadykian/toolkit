@@ -90,8 +90,8 @@ skills, its warnings counted as errors, and `tools/layoutcheck`.
   them, and each ends in one warning. A case of `tests/NAME.sh` fails where it exits non-zero.
 - A check reads the pull request through `gh api` alone, and checks out nothing, so it runs none of
   the pull request's code. It runs on `pull_request`, of the types `opened, edited, reopened,
-  synchronize`. The issue check runs on `issues` instead, of the types `opened, edited`, and reads
-  the issue, whose number `action.yml` passes as `ISSUE`.
+  synchronize, ready_for_review`. The issue check runs on `issues` instead, of the types
+  `opened, edited`, and reads the issue, whose number `action.yml` passes as `ISSUE`.
 - Every check takes the inputs `token` and `comment`, and none that changes a rule. `check.sh`
   holds its skill's values, or reads the skill's own file of them, as banned-terms reads
   `skills/banned-terms/terms.json`.

@@ -108,7 +108,7 @@ name: rules
 
 on:
   pull_request:
-    types: [opened, edited, reopened, synchronize]
+    types: [opened, edited, reopened, synchronize, ready_for_review]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
@@ -131,7 +131,8 @@ jobs:
 ```
 
 [Pin a release](#pin-a-release) says which hash to pin. The `edited` type checks the title and the
-description again once they change, and `pull-requests: write` lets each check keep its comment.
+description again once they change, and `ready_for_review` the stack's base once a draft goes
+ready. `pull-requests: write` lets each check keep its comment.
 The `concurrency` group cancels a pull request's older run once a newer event starts one, as the
 two would race to create each comment. Files changed shows the warnings of every run on the head,
 the cancelled ones too, so `checks: read` lets each check leave out those another run shows.
