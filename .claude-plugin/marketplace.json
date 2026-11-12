@@ -14,7 +14,7 @@
       "source": "./",
       "strict": false,
       "version": "7.0.1",
-      "description": "From issue to main: plan a change as an issue, commit it in small Conventional Commits and stacked pull requests, and land the stack by GitHub's merge.",
+      "description": "From issue to main: plan a change as an issue, commit it in small Conventional Commits and stacked pull requests, check it in CI a stack at a time, and land the stack by GitHub's merge.",
       "author": {
         "name": "Aleksandr Zadykian",
         "url": "https://github.com/zadykian"
@@ -23,8 +23,8 @@
       "repository": "https://github.com/zadykian/toolkit",
       "license": "MIT",
       "category": "development",
-      "keywords": ["github", "issues", "conventional-commits", "stacked-prs", "merge-commits"],
-      "skills": ["./skills/atomic-commits", "./skills/issue", "./skills/land"]
+      "keywords": ["github", "issues", "conventional-commits", "stacked-prs", "github-actions", "merge-commits"],
+      "skills": ["./skills/atomic-commits", "./skills/ci", "./skills/issue", "./skills/land"]
     },
     {
       "name": "docs",

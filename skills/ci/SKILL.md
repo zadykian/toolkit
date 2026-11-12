@@ -1,0 +1,68 @@
+---
+name: ci
+description: >-
+  Write a repository's GitHub Actions workflows: short jobs that run on every pull request, long
+  jobs that wait for a ready stack on the default branch, and what every job sets. Use when
+  writing or editing a workflow, or when CI's runners queue.
+---
+
+# CI jobs
+
+A workflow sorts its jobs into two kinds and gates the long ones, as CI's load follows them. A
+stack of pull requests then takes the runners once, on its top, and stacks take them in turn.
+
+## The repository's rules
+
+The rules below hold in every repository. Its CLAUDE.md names facts alone: its jobs, which of
+them are long, the checks its ruleset requires, and its known flakes.
+
+## 1. Short and long jobs
+
+A job is short where its `timeout-minutes` is 15 or less, on one hosted Linux runner: lint, a
+build, unit tests. A job is long where it takes more time, a matrix, or a runner that costs more,
+such as macOS, Windows or a larger one. Integration and end-to-end tests are long.
+
+A short job runs:
+
+- on each pull request, a draft too, whatever its base;
+- once per commit, on its push;
+- on each push to the default branch.
+
+A long job runs:
+
+- on a ready pull request alone, as section 2 gates it: on its push, or as its draft goes ready;
+- on each push to the default branch.
+
+A job that its `if:` skips passes a required check, so the ruleset may require a long job. A
+workflow that never starts leaves the check pending. So gate a job by `if:`, never by `paths:` or
+`branches:` on the trigger of a workflow that holds a required job.
+
+## 2. Stacks in turn
+
+A long job runs on a ready pull request, the top of a stack on the default branch. The event
+names the stack in `pull_request.stack`, as GitHub's [stack metadata][stack] gives it:
+
+```yaml
+jobs:
+  e2e:
+    if: >-
+      github.event_name != 'pull_request' || (
+      !github.event.pull_request.draft &&
+      github.event.pull_request.stack.position == github.event.pull_request.stack.size &&
+      (github.event.pull_request.stack.base.ref || github.event.pull_request.base.ref) ==
+      github.event.repository.default_branch)
+```
+
+- **A draft** runs the short jobs alone. A stack opens as drafts, before its link, so its
+  `opened` events name no stack: `ready_for_review` is the first event that does.
+- **The top** of a stack holds every change below it, so it alone runs the long jobs.
+- **A stack on another stack** has that stack's branch as its base, so its long jobs skip, even
+  where a pull request of it goes ready by mistake. `atomic-commits` holds it as drafts, and
+  `land` brings it onto the default branch once the stack below lands.
+- **Outside a stack**, `stack` is null: null == null holds, and the pull request's own base
+  stands for the stack's. On another event, such as a push or a release's call, the job runs.
+
+Never start a draft's long jobs by hand, or mark a stack off the default branch ready to try
+them. Run them locally, or wait for the stack's turn.
+
+[stack]: https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/optimizing-ci-for-stacked-pull-requests

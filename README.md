@@ -12,6 +12,7 @@ marketplace, `zadykian`, of five bundles. They and the actions release at one ve
 | ------ | --------------- | ------------------------------------ | ------------------------------------- |
 | flow   | atomic-commits  | by Claude as it commits              | Small commits, stacks of small PRs    |
 | flow   | issue           | `/flow:issue [topic]`                | Plans a change, then files the issue  |
+| flow   | ci              | by Claude as it edits a workflow     | Short and long jobs, stacks in turn   |
 | flow   | land            | `/flow:land PR... [vX.Y.Z]`, by hand | Lands a stack by merge, tags releases |
 | docs   | writing         | by Claude as it edits a file         | The policy for comments and docs      |
 | docs   | trim            | `/docs:trim FILE...`                 | Trims comments and docs to the policy |
