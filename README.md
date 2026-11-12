@@ -14,6 +14,7 @@ marketplace, `zadykian`, of five bundles. They and the actions release at one ve
 | flow   | issue           | `/flow:issue [topic]`                | Plans a change, then files the issue  |
 | flow   | ci              | by Claude as it edits a workflow     | Short and long jobs, stacks in turn   |
 | flow   | land            | `/flow:land PR... [vX.Y.Z]`, by hand | Lands a stack by merge, tags releases |
+| flow   | repo-settings   | `/flow:repo-settings`, by hand       | Checks the settings stacks land by    |
 | docs   | writing         | by Claude as it edits a file         | The policy for comments and docs      |
 | docs   | trim            | `/docs:trim FILE...`                 | Trims comments and docs to the policy |
 | lint   | split-file      | `/lint:split-file FILE`              | Splits a file over the line cap       |

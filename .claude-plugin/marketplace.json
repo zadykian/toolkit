@@ -24,7 +24,13 @@
       "license": "MIT",
       "category": "development",
       "keywords": ["github", "issues", "conventional-commits", "stacked-prs", "github-actions", "merge-commits"],
-      "skills": ["./skills/atomic-commits", "./skills/ci", "./skills/issue", "./skills/land"]
+      "skills": [
+        "./skills/atomic-commits",
+        "./skills/ci",
+        "./skills/issue",
+        "./skills/land",
+        "./skills/repo-settings"
+      ]
     },
     {
       "name": "docs",
