@@ -65,4 +65,64 @@ jobs:
 Never start a draft's long jobs by hand, or mark a stack off the default branch ready to try
 them. Run them locally, or wait for the stack's turn.
 
+## 3. The workflows
+
+The short jobs take one workflow, on the default types of `pull_request`:
+
+```yaml
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions: {}
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@SHA # vX.Y.Z
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - run: make lint
+```
+
+The long jobs take another, which adds `ready_for_review` to the types. Each of its jobs takes
+the condition of section 2:
+
+```yaml
+name: e2e
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+  workflow_call:
+
+concurrency:
+  group: e2e-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+```
+
+- A newer event of a pull request cancels its runs in progress, as their head is gone. A push to
+  the default branch takes a group of its own run, so nothing cancels it.
+- Write the group's name out: in a called workflow, `github.workflow` names the caller.
+- A release workflow calls the long jobs by `workflow_call` on its tag. The event there is the
+  push, so the condition holds and they run.
+- Where one workflow must hold both kinds, each short job takes
+  `if: github.event.action != 'ready_for_review'`, since that event repeats the head's commit.
+  The group then ends in `-${{ github.event.action == 'ready_for_review' }}`, so that the run of
+  that event cancels no short job of the run before it.
+
 [stack]: https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/optimizing-ci-for-stacked-pull-requests
