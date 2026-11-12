@@ -25,9 +25,12 @@ In CI, the toolkit's [`atomic-commits` action][ac-action] warns on a pull reques
 size or title break the skill's rules, and the [`pr-description` action][pd-action] on its
 description. Both only warn: neither blocks the merge.
 
-A stack's pull requests open as drafts, are linked, and then marked ready, bottom first. A
-workflow that reads the stack acts on an event after the link, which is `ready_for_review`. A job
-for the stack's top alone takes that type and this condition:
+A stack's pull requests open as drafts and are linked. Those of a stack on `main` are then marked
+ready, bottom first. A stack on another stack stays a draft until the one below lands. Then it
+moves onto `main` by a rebase and goes ready, so that CI runs its long jobs on one stack at a
+time. A workflow that reads the stack acts on an event after the link, which is
+`ready_for_review`. A long job takes that type and this condition: a ready pull request, the top
+of a stack on the default branch.
 
 ```yaml
 on:
@@ -36,13 +39,16 @@ on:
 jobs:
   long:
     if: >-
-      (github.event.action != 'opened' || !github.event.pull_request.draft) &&
-      github.event.pull_request.stack.position == github.event.pull_request.stack.size
+      github.event_name != 'pull_request' || (
+      !github.event.pull_request.draft &&
+      github.event.pull_request.stack.position == github.event.pull_request.stack.size &&
+      (github.event.pull_request.stack.base.ref || github.event.pull_request.base.ref) ==
+      github.event.repository.default_branch)
 ```
 
-Outside a stack and on a push, `stack` is null, so null == null holds and the job runs. A job meant
-to run once per commit takes `if: github.event.action != 'ready_for_review'`, since that event
-repeats the head's commit.
+Outside a stack, `stack` is null: null == null holds, and the pull request's own base stands for
+the stack's. On another event, such as a push, the job runs. A job meant to run once per commit
+takes `if: github.event.action != 'ready_for_review'`, since that event repeats the head's commit.
 
 Every rule of the skill holds in every repository: the header, its types and scopes, and the
 body. So do the pull request's title and description, the size limits, the plan and the stack. The
