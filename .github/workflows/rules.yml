@@ -4,10 +4,12 @@ name: rules
 # three checks of actions/ as the pull request has them. So a pull request that changes a rule, in
 # its skill and its check, is checked by the check it makes. Each warns and never blocks, so no
 # ruleset requires the job. banned-terms passes over the files that quote the terms on purpose.
+# ready_for_review is among the types, as atomic-commits warns on a pull request that goes ready
+# in a stack off main.
 
 on:
   pull_request:
-    types: [opened, edited, reopened, synchronize]
+    types: [opened, edited, reopened, synchronize, ready_for_review]
 
 # Two runs of a pull request race to create each check's comment, so a newer event's run cancels
 # the older one.

@@ -198,9 +198,12 @@ main ← feat/retry-1-gateway ← feat/retry-2-policy ← feat/retry-3-checkout
   `gh pr create --draft --base feat/retry-1-gateway --head feat/retry-2-policy`.
 - Link the open PRs as one stack, bottom first:
   `gh stack link feat/retry-1-gateway feat/retry-2-policy feat/retry-3-checkout`. It needs gh's
-  stack extension: `gh extension install github/gh-stack`. Then run `gh pr ready <number>` on each,
-  bottom first: a PR opens before the link, so only an event after it names its stack. One PR
-  alone opens ready; a stack the user means to hold stays a draft.
+  stack extension: `gh extension install github/gh-stack`.
+- Only a stack on `main` goes ready: run `gh pr ready <number>` on each PR, bottom first, as only
+  an event after the link names its stack. One PR alone, on `main`, opens ready. A stack the user
+  means to hold stays a draft.
+- A stack on another stack, linked with `--base <branch>`, stays a draft, so that CI runs its long
+  jobs on one stack at a time. Once the stack below lands, rebase it onto `main` and mark it ready.
 - Once a lower PR lands, GitHub retargets the next one and rebases the rest. Before editing again,
   fetch them and move each local branch to its remote one, the top branch last: `git fetch origin`,
   then `git switch -C <branch> origin/<branch>` for each.
@@ -280,11 +283,8 @@ per commit and the full suite on each PR's tip.
 If `--exec` stops on a commit, fix that commit (`git commit --amend`), then `git rebase --continue`.
 If any size is over its limit or any header doesn't conform, fix it before reporting.
 
-In CI, two of the toolkit's actions check a PR against these rules. Both only warn, and never
-block the merge:
-
-- [`atomic-commits`][ac-action]: its commits, its size, its stack's size and its title.
-- [`pr-description`][pd-action]: its description, as section 6 sets it.
+In CI, the toolkit's [`atomic-commits`][ac-action] and [`pr-description`][pd-action] actions warn
+on a PR that breaks these rules. Neither blocks the merge.
 
 [ac-action]: https://github.com/zadykian/toolkit/tree/main/actions/atomic-commits
 [pd-action]: https://github.com/zadykian/toolkit/tree/main/actions/pr-description

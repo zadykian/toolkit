@@ -7,6 +7,13 @@ on:
   push:
     branches: [main]
 
+# Both jobs are short, as the ci skill sorts them, so they run on each pull request, a draft too.
+# A newer push to a pull request cancels its run in progress, as its head is gone. A push to main
+# takes a group of its own run, so nothing cancels it.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 permissions: {}
 
 jobs:

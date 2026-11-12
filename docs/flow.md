@@ -22,27 +22,13 @@ title's among them. A repository copies [the skill's template][pr-template] to
 with that form, where the author puts the title in place of `{NAME}`.
 
 In CI, the toolkit's [`atomic-commits` action][ac-action] warns on a pull request whose commits,
-size or title break the skill's rules, and the [`pr-description` action][pd-action] on its
+size, stack or title break the skill's rules, and the [`pr-description` action][pd-action] on its
 description. Both only warn: neither blocks the merge.
 
-A stack's pull requests open as drafts, are linked, and then marked ready, bottom first. A
-workflow that reads the stack acts on an event after the link, which is `ready_for_review`. A job
-for the stack's top alone takes that type and this condition:
-
-```yaml
-on:
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
-jobs:
-  long:
-    if: >-
-      (github.event.action != 'opened' || !github.event.pull_request.draft) &&
-      github.event.pull_request.stack.position == github.event.pull_request.stack.size
-```
-
-Outside a stack and on a push, `stack` is null, so null == null holds and the job runs. A job meant
-to run once per commit takes `if: github.event.action != 'ready_for_review'`, since that event
-repeats the head's commit.
+A stack's pull requests open as drafts and are linked. Those of a stack on `main` are then marked
+ready, bottom first. A stack on another stack stays a draft until the one below lands. Then it
+moves onto `main` by a rebase and goes ready, so that CI runs its long jobs on one stack at a
+time, as [ci](#ci) gates them.
 
 Every rule of the skill holds in every repository: the header, its types and scopes, and the
 body. So do the pull request's title and description, the size limits, the plan and the stack. The
@@ -69,10 +55,28 @@ The title's form, the fields and the cap hold in every repository. The repositor
 CLAUDE.md names the checks that a title and a body pass before they go out, such as Vale or a
 confidentiality check.
 
+## ci
+
+Has Claude write a repository's GitHub Actions workflows so that CI's load stays low. A short job
+takes 15 minutes at most on one hosted Linux runner, and runs on every pull request, a draft too.
+A long job runs on a ready pull request alone, the top of a stack on the default branch, and on
+each push to that branch. So a stack takes the runners once, and a stack on another stack waits
+as drafts for its turn. Claude uses the skill as it writes or edits a workflow, or as `/flow:ci`.
+
+The skill gives:
+
+- a workflow for the short jobs, and one for the long jobs, with their events and groups;
+- the long job's condition, which reads the stack that GitHub names in the pull request's event;
+- what every job sets: its permissions, its timeout, pinned actions and a checkout of the head.
+
+The rules hold in every repository. Its CLAUDE.md names its jobs, which of them are long, and
+the checks its ruleset requires.
+
 ## land
 
 Lands a stack of approved pull requests on `main`, the bottom first, by GitHub's merge commits,
-and tags a release if asked. It runs by hand only:
+and tags a release if asked. Then it brings a drafted stack that rests on the landed one onto
+`main` and marks it ready, as its turn has come. It runs by hand only:
 
 ```text
 /flow:land 41 42 [vX.Y.Z]
@@ -82,10 +86,8 @@ Each pull request's signed commits land as they are, under a merge commit that G
 A rebase merge would not do: GitHub signs none of the commits it writes. The skill needs:
 
 - `gh`, logged in, with the [gh-stack][gh-stack] extension: `gh extension install github/gh-stack`;
-- a repository whose settings allow merge commits;
-- a ruleset on the default branch that allows the merge method alone and requires signed commits,
-  with no "Require linear history" rule;
-- that ruleset to require branches to be up to date, so a merge's tree is the tree CI checked.
+- a repository with the merge settings and the ruleset that [repo-settings](#repo-settings)
+  checks.
 
 The repository's CLAUDE.md names the facts of how its changes land, which add to the skill's
 steps and change none of them:
@@ -94,6 +96,31 @@ steps and change none of them:
 - a gate before the merge, such as a check of the pull request's text;
 - the release: its workflow, and whether the skill pushes the tag.
 
+## repo-settings
+
+Checks a repository's settings against those that the bundle's skills rest on, reports each
+difference, and applies them once the maintainer approves. It runs by hand only, from a clone,
+with a token that administers the repository:
+
+```text
+/flow:repo-settings
+```
+
+The settings:
+
+- the merge: merge commits alone, with no squash, no rebase merge and no "Update branch" button,
+  and merged branches deleted, which retargets the stack above;
+- Actions: a token that reads by default, and approves no pull request;
+- a ruleset on the default branch, [main.json][ruleset-main]. It requires signed commits, pull
+  requests by the merge method alone with their conversations resolved, and the short jobs of
+  [ci](#ci) as checks. It requires branches up to date too, so that a merge's tree is the tree CI
+  checked. It has no "Require linear history" rule, which refuses a merge commit;
+- a ruleset on the tags `v*`, [tags.json][ruleset-tags], which blocks their update and deletion,
+  and immutable releases where the repository publishes release files.
+
+The repository's CLAUDE.md names its short jobs, the reviews it asks for, and whether it
+publishes release files.
+
 [cc]: https://www.conventionalcommits.org/en/v1.0.0/
 [ac-action]: ../actions/atomic-commits
 [pd-action]: ../actions/pr-description
@@ -101,3 +128,5 @@ steps and change none of them:
 [pr-template]: ../skills/atomic-commits/pull_request_template.md
 [issue-form]: ../skills/issue/change.yml
 [gh-stack]: https://github.com/github/gh-stack
+[ruleset-main]: ../skills/repo-settings/main.json
+[ruleset-tags]: ../skills/repo-settings/tags.json

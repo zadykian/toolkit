@@ -1,6 +1,6 @@
 #!/bin/bash
-# Warns where the commits, the size or the title of pull request $PR of $GH_REPO break the rules
-# of the atomic-commits skill. EXCLUDE holds the input that action.yml describes.
+# Warns where the commits, the size, the stack or the title of pull request $PR of $GH_REPO break
+# the rules of the atomic-commits skill. EXCLUDE holds the input that action.yml describes.
 
 set -euo pipefail
 # A $(...) fails as its command fails. A length counts characters, not bytes.
@@ -90,9 +90,11 @@ messages=$skill#3-commit-messages-conventional-commits-100
 # stack, at $skill#hard-rules.
 types='feat fix refactor perf test docs style build ci chore revert'
 max_commit_lines=100 max_pr_lines=500 max_stack_prs=5
-pull=$(gh api "repos/$GH_REPO/pulls/$PR" --jq '[.base.ref, .commits // 0,
-    .stack.size // 0, .title] | map(tostring) | join(" ")')
-read -r base total linked title <<<"$pull"
+# The pull request's base, and its stack's, which is its own outside a stack.
+pull=$(gh api "repos/$GH_REPO/pulls/$PR" --jq '[.base.ref, .commits // 0, .stack.size // 0,
+    .draft // false, .stack.base.ref // .base.ref, .base.repo.default_branch, .title] |
+    map(tostring) | join(" ")')
+read -r base total linked draft trunk default title <<<"$pull"
 header_form="^(${types// /|})(\([a-z0-9._/-]+\))?!?: [^ ]"
 # How to reword a commit, as section 4 of the skill says.
 reword=$(
@@ -146,6 +148,10 @@ $max_stack_prs of them at most as one stack, and split the rest of the work into
 issue, each landing as a stack of its own. An inseparable change, such as a migration to another \
 language, takes fewer and larger pull requests instead."
 stack=$skill#6-stack-mechanics-git--238
+rule pr-stack-base 'A ready pull request in a stack off the default branch' "$stack" \
+    "Hold it as a draft until the stack below lands, so that CI runs its long jobs on one stack at \
+a time: \`gh pr ready $PR --undo\`. Then rebase it onto \`$default\`, push it, and mark it ready \
+again: \`gh pr ready $PR\`."
 rule pr-title 'The PR title is not a Conventional Commits header' "$stack" "Retitle it as a \
 commit header, as the commit that lands the pull request carries its title: \
 \`gh pr edit $PR --title '<type>(<scope>): <description>'\`."
@@ -195,4 +201,7 @@ size=$(changed "repos/$GH_REPO/pulls/$PR/files?per_page=100" '.[]')
 # is not counted.
 [ "$linked" -le "$max_stack_prs" ] ||
     finding pr-stack-size "#$PR stands in a stack of $linked pull requests."
+# A stack on another stack waits as a draft for the one below to land.
+$draft || [ "$trunk" = "$default" ] || finding pr-stack-base \
+    "#$PR is ready for review, but it rests on \`$trunk\`, not on \`$default\`."
 report_finish

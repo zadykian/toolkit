@@ -12,7 +12,9 @@ marketplace, `zadykian`, of five bundles. They and the actions release at one ve
 | ------ | --------------- | ------------------------------------ | ------------------------------------- |
 | flow   | atomic-commits  | by Claude as it commits              | Small commits, stacks of small PRs    |
 | flow   | issue           | `/flow:issue [topic]`                | Plans a change, then files the issue  |
+| flow   | ci              | by Claude as it edits a workflow     | Short and long jobs, stacks in turn   |
 | flow   | land            | `/flow:land PR... [vX.Y.Z]`, by hand | Lands a stack by merge, tags releases |
+| flow   | repo-settings   | `/flow:repo-settings`, by hand       | Checks the settings stacks land by    |
 | docs   | writing         | by Claude as it edits a file         | The policy for comments and docs      |
 | docs   | trim            | `/docs:trim FILE...`                 | Trims comments and docs to the policy |
 | lint   | split-file      | `/lint:split-file FILE`              | Splits a file over the line cap       |
@@ -91,7 +93,7 @@ copies no hooks: the lint bundle's come with the plugin alone.
 
 | Action                                   | Skill          | What it does                                       |
 | ---------------------------------------- | -------------- | -------------------------------------------------- |
-| [atomic-commits](actions/atomic-commits) | atomic-commits | Warns on a PR's commits, its size or its title     |
+| [atomic-commits](actions/atomic-commits) | atomic-commits | Warns on a PR's commits, size, stack or title      |
 | [pr-description](actions/pr-description) | atomic-commits | Warns on a description off title, Problem, Changes |
 | [issue](actions/issue)                   | issue          | Warns on an issue's title or body off its form     |
 | [banned-terms](actions/banned-terms)     | banned-terms   | Warns on vague names and fillers that a PR adds    |
@@ -108,7 +110,7 @@ name: rules
 
 on:
   pull_request:
-    types: [opened, edited, reopened, synchronize]
+    types: [opened, edited, reopened, synchronize, ready_for_review]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
@@ -131,7 +133,8 @@ jobs:
 ```
 
 [Pin a release](#pin-a-release) says which hash to pin. The `edited` type checks the title and the
-description again once they change, and `pull-requests: write` lets each check keep its comment.
+description again once they change, and `ready_for_review` the stack's base once a draft goes
+ready. `pull-requests: write` lets each check keep its comment.
 The `concurrency` group cancels a pull request's older run once a newer event starts one, as the
 two would race to create each comment. Files changed shows the warnings of every run on the head,
 the cancelled ones too, so `checks: read` lets each check leave out those another run shows.

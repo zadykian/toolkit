@@ -1,6 +1,6 @@
 # atomic-commits
 
-Warns on a pull request whose commits, size or title break the rules of the
+Warns on a pull request whose commits, size, stack or title break the rules of the
 [atomic-commits][skill] skill. It never blocks the merge: it annotates the pull request, writes a
 job summary and keeps one comment of its report up to date, and its job passes.
 
@@ -13,7 +13,7 @@ name: rules
 
 on:
   pull_request:
-    types: [opened, edited, reopened, synchronize]
+    types: [opened, edited, reopened, synchronize, ready_for_review]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
@@ -35,9 +35,10 @@ jobs:
 
 Pin it by the full hash of a version tag's commit, as the repository's
 [README](../../README.md#versions) says. `pull-requests: write` lets it comment, `checks: read` lets
-it leave out the warnings that another run on the head shows, and the `edited` type checks the
-title again once it changes. It reads the pull request through GitHub's API alone and checks out
-nothing, so it runs none of the pull request's code.
+it leave out the warnings that another run on the head shows. The `edited` type checks the title
+again once it changes, and `ready_for_review` the stack's base once a draft goes ready. It reads
+the pull request through GitHub's API alone and checks out nothing, so it runs none of the pull
+request's code.
 
 ## What it checks
 
@@ -76,6 +77,12 @@ The sizes, as [the hard rules][rules] set them:
   `exclude` does not match.
 - `pr-stack-size`: the pull request's stack holds 5 pull requests at most. It counts those that
   GitHub links in it.
+
+The pull request's stack, as [section 6][s6] sets it:
+
+- `pr-stack-base`: a pull request that is ready for review rests on the default branch. That is
+  its stack's base, or its own base outside a stack. A stack on another stack stays a draft until
+  the one below lands, so a draft gets no finding.
 
 The pull request's title, as [section 6][s6] sets it:
 
