@@ -66,16 +66,31 @@ run again.
 
 ## A rebased stack
 
-Rebase only when the maintainer asks. A stack's branches are linear: each on the one below, and
-the bottom on main. Rebase from the top branch, never merging main in, with
-`git rebase --update-refs origin/main`, and sign each commit it writes, as the ruleset requires.
-Then push each branch with its old head as the lease:
+Rebase only when the maintainer asks, or to bring the stack above onto main (below). A stack's
+branches are linear: each on the one below, and the bottom on main. Rebase from the top branch,
+never merging main in, with `git rebase --update-refs origin/main`, and sign each commit it
+writes, as the ruleset requires. Then push each branch with its old head as the lease:
 
 ```sh
 git push origin --force-with-lease=BRANCH:OLD_SHA BRANCH
 ```
 
 The checks run again. Wait for them, `gh pr checks N --watch`, before the merge.
+
+## The stack above
+
+A stack on the one that lands waits as drafts, as `atomic-commits` holds it. Before the merge,
+note its bottom: `gh pr list --base TOP_BRANCH --json number,headRefName,isDraft`, TOP_BRANCH
+being TOP's head branch. Each pull request above has the head branch of the one below as its
+base. Once the merge is done, where there is such a stack, its turn has come:
+
+1. Its bottom's base is main, as GitHub retargets it once TOP_BRANCH is deleted. Where the
+   repository keeps merged branches, retarget it: `gh pr edit N --base main`.
+2. Rebase it onto main and push each branch, as above: the ruleset requires them up to date.
+3. Link it as one stack on main, bottom first, as `gh stack link 44 45 46`.
+4. Mark each pull request ready, bottom first: `gh pr ready N`. Its long jobs start on that event.
+
+Then report its pull requests, and stop. To land them is another run of this skill.
 
 ## Release
 

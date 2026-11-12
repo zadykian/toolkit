@@ -78,7 +78,8 @@ confidentiality check.
 ## land
 
 Lands a stack of approved pull requests on `main`, the bottom first, by GitHub's merge commits,
-and tags a release if asked. It runs by hand only:
+and tags a release if asked. Then it brings a drafted stack that rests on the landed one onto
+`main` and marks it ready, as its turn has come. It runs by hand only:
 
 ```text
 /flow:land 41 42 [vX.Y.Z]
