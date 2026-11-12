@@ -125,4 +125,23 @@ concurrency:
   The group then ends in `-${{ github.event.action == 'ready_for_review' }}`, so that the run of
   that event cancels no short job of the run before it.
 
+## 4. Every workflow and job
+
+- `permissions: {}` at the top, and each job names the scopes it needs.
+- Each job sets `timeout-minutes`, so that a hung step frees its runner.
+- Each `uses:` pins an action by its full commit SHA, with the version in a comment.
+- A checkout sets `persist-credentials: false`. On a pull request it takes the head's SHA, not
+  GitHub's test merge, where the ruleset requires branches up to date: the head's tree lands.
+- A value of the event reaches a step through `env:`, never as `${{ }}` in `run:`.
+- The trigger is `pull_request`, never `pull_request_target`, which runs a stranger's code with
+  the repository's secrets. A job that reads a secret skips a fork's pull request:
+  `if: github.event.pull_request.head.repo.full_name == github.repository`.
+- A check that only warns takes a workflow of its own, which no ruleset requires.
+
+## 5. Verify
+
+Run the repository's gates on each workflow changed, such as actionlint and zizmor. Then read
+the checks of a draft and of a ready pull request: `gh pr checks N`. The draft shows the long jobs
+skipped, and the top of a ready stack shows them run.
+
 [stack]: https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/optimizing-ci-for-stacked-pull-requests
