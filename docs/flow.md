@@ -28,27 +28,7 @@ description. Both only warn: neither blocks the merge.
 A stack's pull requests open as drafts and are linked. Those of a stack on `main` are then marked
 ready, bottom first. A stack on another stack stays a draft until the one below lands. Then it
 moves onto `main` by a rebase and goes ready, so that CI runs its long jobs on one stack at a
-time. A workflow that reads the stack acts on an event after the link, which is
-`ready_for_review`. A long job takes that type and this condition: a ready pull request, the top
-of a stack on the default branch.
-
-```yaml
-on:
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
-jobs:
-  long:
-    if: >-
-      github.event_name != 'pull_request' || (
-      !github.event.pull_request.draft &&
-      github.event.pull_request.stack.position == github.event.pull_request.stack.size &&
-      (github.event.pull_request.stack.base.ref || github.event.pull_request.base.ref) ==
-      github.event.repository.default_branch)
-```
-
-Outside a stack, `stack` is null: null == null holds, and the pull request's own base stands for
-the stack's. On another event, such as a push, the job runs. A job meant to run once per commit
-takes `if: github.event.action != 'ready_for_review'`, since that event repeats the head's commit.
+time, as [ci](#ci) gates them.
 
 Every rule of the skill holds in every repository: the header, its types and scopes, and the
 body. So do the pull request's title and description, the size limits, the plan and the stack. The
@@ -74,6 +54,23 @@ the skill's form. It runs on `issues`, in a workflow of its own, and only warns:
 The title's form, the fields and the cap hold in every repository. The repository's
 CLAUDE.md names the checks that a title and a body pass before they go out, such as Vale or a
 confidentiality check.
+
+## ci
+
+Has Claude write a repository's GitHub Actions workflows so that CI's load stays low. A short job
+takes 15 minutes at most on one hosted Linux runner, and runs on every pull request, a draft too.
+A long job runs on a ready pull request alone, the top of a stack on the default branch, and on
+each push to that branch. So a stack takes the runners once, and a stack on another stack waits
+as drafts for its turn. Claude uses the skill as it writes or edits a workflow, or as `/flow:ci`.
+
+The skill gives:
+
+- a workflow for the short jobs, and one for the long jobs, with their events and groups;
+- the long job's condition, which reads the stack that GitHub names in the pull request's event;
+- what every job sets: its permissions, its timeout, pinned actions and a checkout of the head.
+
+The rules hold in every repository. Its CLAUDE.md names its jobs, which of them are long, and
+the checks its ruleset requires.
 
 ## land
 
