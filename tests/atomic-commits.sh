@@ -124,8 +124,7 @@ warnings 6
 summarizes 'GIT_SEQUENCE_EDITOR=: git rebase -i --autosquash --update-refs main'
 
 setup warns-once-on-a-merge-commit
-answer repos/o/r/pulls/1 "$(pull '{"base": {"ref": "feat/x-1"}}')"
-answer 'repos/o/r/pulls?head=o:feat/x-1' '[]'
+answer repos/o/r/pulls/1 "$(pull '{"draft": true, "base": {"ref": "feat/x-1"}}')"
 answer repos/o/r/pulls/1/commits '[{"sha": "abcdef0123", "parents": [{}, {}],
     "commit": {"message": "Merge branch '\''main'\'' into feat"}}]'
 answer repos/o/r/pulls/1/files '[]'
@@ -183,6 +182,32 @@ atomic
 warns 'title=atomic-commits%3A The stack holds over 5 pull requests::'
 warns '#1 stands in a stack of 6 pull requests.'
 warnings 1
+
+# Only a stack on the default branch goes ready. Outside a stack, the pull request's own base
+# stands for the stack's.
+setup warns-on-a-ready-pull-request-off-the-default-branch
+commits 'feat: add y'
+answer repos/o/r/pulls/1 "$(pull '{"base": {"ref": "feat/x-1"},
+    "stack": {"size": 2, "position": 2, "base": {"ref": "main"}}}')"
+atomic
+warnings 0
+above='"stack": {"size": 2, "position": 1, "base": {"ref": "feat/x-5"}}'
+answer repos/o/r/pulls/1 "$(pull "{\"draft\": true, $above}")"
+atomic
+warnings 0
+answer repos/o/r/pulls/1 "$(pull "{\"draft\": false, $above}")"
+atomic
+warns 'title=atomic-commits%3A A ready pull request in a stack off the default branch::'
+warns '#1 is ready for review, but it rests on `feat/x-5`, not on `main`.'
+warnings 1
+summarizes 'gh pr ready 1 --undo'
+answer repos/o/r/pulls/1 "$(pull '{"base": {"ref": "feat/x-1"}}')"
+atomic
+warns '#1 is ready for review, but it rests on `feat/x-1`, not on `main`.'
+warnings 1
+answer repos/o/r/pulls/1 "$(pull '{"base": {"ref": "dev", "repo": {"default_branch": "dev"}}}')"
+atomic
+warnings 0
 
 setup warns-on-the-title
 commits 'feat: add y'

@@ -22,7 +22,7 @@ title's among them. A repository copies [the skill's template][pr-template] to
 with that form, where the author puts the title in place of `{NAME}`.
 
 In CI, the toolkit's [`atomic-commits` action][ac-action] warns on a pull request whose commits,
-size or title break the skill's rules, and the [`pr-description` action][pd-action] on its
+size, stack or title break the skill's rules, and the [`pr-description` action][pd-action] on its
 description. Both only warn: neither blocks the merge.
 
 A stack's pull requests open as drafts and are linked. Those of a stack on `main` are then marked

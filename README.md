@@ -91,7 +91,7 @@ copies no hooks: the lint bundle's come with the plugin alone.
 
 | Action                                   | Skill          | What it does                                       |
 | ---------------------------------------- | -------------- | -------------------------------------------------- |
-| [atomic-commits](actions/atomic-commits) | atomic-commits | Warns on a PR's commits, its size or its title     |
+| [atomic-commits](actions/atomic-commits) | atomic-commits | Warns on a PR's commits, size, stack or title      |
 | [pr-description](actions/pr-description) | atomic-commits | Warns on a description off title, Problem, Changes |
 | [issue](actions/issue)                   | issue          | Warns on an issue's title or body off its form     |
 | [banned-terms](actions/banned-terms)     | banned-terms   | Warns on vague names and fillers that a PR adds    |
