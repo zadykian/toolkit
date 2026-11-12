@@ -113,6 +113,9 @@ skills, its warnings counted as errors, and `tools/layoutcheck`.
 
 ## How changes land
 
+- [ci](skills/ci/SKILL.md) sorts CI's jobs. `lint` and `test` are short: they run on each pull
+  request, a draft too, and `main`'s ruleset requires both. The toolkit has no long job.
 - [land](skills/land/SKILL.md) sets how pull requests land, by GitHub's merge commits.
+  [repo-settings](skills/repo-settings/SKILL.md) holds the settings and rulesets that it rests on.
 - `.github/workflows/release.yml` releases a raised version once it lands on `main`, with the
   notes that `tools/releasenotes` writes from the commits since the last release.
