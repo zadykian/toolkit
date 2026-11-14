@@ -199,11 +199,11 @@ main ← feat/retry-1-gateway ← feat/retry-2-policy ← feat/retry-3-checkout
 - Link the open PRs as one stack, bottom first:
   `gh stack link feat/retry-1-gateway feat/retry-2-policy feat/retry-3-checkout`. It needs gh's
   stack extension: `gh extension install github/gh-stack`.
-- Only a stack on `main` goes ready: run `gh pr ready <number>` on each PR, bottom first, as only
-  an event after the link names its stack. One PR alone, on `main`, opens ready. A stack the user
-  means to hold stays a draft.
-- A stack on another stack, linked with `--base <branch>`, stays a draft, so that CI runs its long
-  jobs on one stack at a time. Once the stack below lands, rebase it onto `main` and mark it ready.
+- Only a stack on a branch that no ready PR heads, such as `main` or an integration branch, goes
+  ready. Run `gh pr ready <number>` on each PR, bottom first, as only an event after the link
+  names its stack. One PR alone on such a branch opens ready. A stack the user holds stays a draft.
+- A stack on another stack, on a ready PR's head branch, stays a draft: CI runs one stack's long
+  jobs at a time. Once the stack below lands, rebase it onto that stack's base, and mark it ready.
 - Once a lower PR lands, GitHub retargets the next one and rebases the rest. Before editing again,
   fetch them and move each local branch to its remote one, the top branch last: `git fetch origin`,
   then `git switch -C <branch> origin/<branch>` for each.

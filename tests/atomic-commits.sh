@@ -183,9 +183,9 @@ warns 'title=atomic-commits%3A The stack holds over 5 pull requests::'
 warns '#1 stands in a stack of 6 pull requests.'
 warnings 1
 
-# Only a stack on the default branch goes ready. Outside a stack, the pull request's own base
-# stands for the stack's.
-setup warns-on-a-ready-pull-request-off-the-default-branch
+# Only a stack on a branch that no open pull request heads goes ready. Outside a stack, the pull
+# request's own base stands for the stack's.
+setup warns-on-a-ready-pull-request-on-a-stack-yet-to-land
 commits 'feat: add y'
 answer repos/o/r/pulls/1 "$(pull '{"base": {"ref": "feat/x-1"},
     "stack": {"size": 2, "position": 2, "base": {"ref": "main"}}}')"
@@ -196,15 +196,26 @@ answer repos/o/r/pulls/1 "$(pull "{\"draft\": true, $above}")"
 atomic
 warnings 0
 answer repos/o/r/pulls/1 "$(pull "{\"draft\": false, $above}")"
+answer 'repos/o/r/pulls?state=open&head=o:feat/x-5' '[{"number": 5, "draft": false}]'
 atomic
-warns 'title=atomic-commits%3A A ready pull request in a stack off the default branch::'
-warns '#1 is ready for review, but it rests on `feat/x-5`, not on `main`.'
+warns 'title=atomic-commits%3A A ready pull request on a stack yet to land::'
+warns '#1 is ready for review, but it rests on `feat/x-5`, the head branch of #5, ready too.'
 warnings 1
 summarizes 'gh pr ready 1 --undo'
 answer repos/o/r/pulls/1 "$(pull '{"base": {"ref": "feat/x-1"}}')"
+answer 'repos/o/r/pulls?state=open&head=o:feat/x-1' '[{"number": 4, "draft": false}]'
 atomic
-warns '#1 is ready for review, but it rests on `feat/x-1`, not on `main`.'
+warns '#1 is ready for review, but it rests on `feat/x-1`, the head branch of #4, ready too.'
 warnings 1
+# An integration branch heads no pull request, or a draft one into the default branch.
+answer repos/o/r/pulls/1 "$(pull '{"base": {"ref": "feature/x"},
+    "stack": {"size": 2, "position": 1, "base": {"ref": "feature/x"}}}')"
+answer 'repos/o/r/pulls?state=open&head=o:feature/x' '[]'
+atomic
+warnings 0
+answer 'repos/o/r/pulls?state=open&head=o:feature/x' '[{"number": 3, "draft": true}]'
+atomic
+warnings 0
 answer repos/o/r/pulls/1 "$(pull '{"base": {"ref": "dev", "repo": {"default_branch": "dev"}}}')"
 atomic
 warnings 0

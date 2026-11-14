@@ -26,9 +26,10 @@ size, stack or title break the skill's rules, and the [`pr-description` action][
 description. Both only warn: neither blocks the merge.
 
 A stack's pull requests open as drafts and are linked. Those of a stack on `main` are then marked
-ready, bottom first. A stack on another stack stays a draft until the one below lands. Then it
-moves onto `main` by a rebase and goes ready, so that CI runs its long jobs on one stack at a
-time, as [ci](#ci) gates them.
+ready, bottom first. So are those on an integration branch whose pull request into `main` is a
+draft. A stack on another, ready stack rests on its head branch, and stays a draft until the one
+below lands. Then it moves onto that stack's base by a rebase and goes ready. So CI runs its long
+jobs on one stack at a time, as [ci](#ci) gates them.
 
 Every rule of the skill holds in every repository: the header, its types and scopes, and the
 body. So do the pull request's title and description, the size limits, the plan and the stack. The
