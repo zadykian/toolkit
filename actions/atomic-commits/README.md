@@ -80,9 +80,10 @@ The sizes, as [the hard rules][rules] set them:
 
 The pull request's stack, as [section 6][s6] sets it:
 
-- `pr-stack-base`: a pull request that is ready for review rests on the default branch. That is
-  its stack's base, or its own base outside a stack. A stack on another stack stays a draft until
-  the one below lands, so a draft gets no finding.
+- `pr-stack-base`: a pull request that is ready for review rests on no ready pull request's head
+  branch. That is its stack's base, or its own base outside a stack. It may be the default branch,
+  or an integration branch whose pull request into the default branch is a draft. A stack on
+  another stack stays a draft until the one below lands, so a draft gets no finding.
 
 The pull request's title, as [section 6][s6] sets it:
 

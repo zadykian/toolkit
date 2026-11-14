@@ -148,10 +148,10 @@ $max_stack_prs of them at most as one stack, and split the rest of the work into
 issue, each landing as a stack of its own. An inseparable change, such as a migration to another \
 language, takes fewer and larger pull requests instead."
 stack=$skill#6-stack-mechanics-git--238
-rule pr-stack-base 'A ready pull request in a stack off the default branch' "$stack" \
+rule pr-stack-base 'A ready pull request on a stack yet to land' "$stack" \
     "Hold it as a draft until the stack below lands, so that CI runs its long jobs on one stack at \
-a time: \`gh pr ready $PR --undo\`. Then rebase it onto \`$default\`, push it, and mark it ready \
-again: \`gh pr ready $PR\`."
+a time: \`gh pr ready $PR --undo\`. Then rebase it onto the branch that stack landed on, push it, \
+and mark it ready again: \`gh pr ready $PR\`."
 rule pr-title 'The PR title is not a Conventional Commits header' "$stack" "Retitle it as a \
 commit header, as the commit that lands the pull request carries its title: \
 \`gh pr edit $PR --title '<type>(<scope>): <description>'\`."
@@ -201,7 +201,13 @@ size=$(changed "repos/$GH_REPO/pulls/$PR/files?per_page=100" '.[]')
 # is not counted.
 [ "$linked" -le "$max_stack_prs" ] ||
     finding pr-stack-size "#$PR stands in a stack of $linked pull requests."
-# A stack on another stack waits as a draft for the one below to land.
-$draft || [ "$trunk" = "$default" ] || finding pr-stack-base \
-    "#$PR is ready for review, but it rests on \`$trunk\`, not on \`$default\`."
+# A stack on another stack waits as a draft while the one below is ready, so that CI runs one
+# stack's long jobs at a time. A draft below, such as an integration branch's into the default
+# branch, runs none, and nothing below a long-lived branch runs them either.
+if ! $draft && [ "$trunk" != "$default" ]; then
+    below=$(gh api -X GET "repos/$GH_REPO/pulls" -f state=open -f "head=${GH_REPO%%/*}:$trunk" \
+        --jq 'map(select(.draft | not)) | .[0].number // empty')
+    [ -z "$below" ] || finding pr-stack-base \
+        "#$PR is ready for review, but it rests on \`$trunk\`, the head branch of #$below, ready too."
+fi
 report_finish
