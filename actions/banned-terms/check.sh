@@ -53,7 +53,8 @@ with \`exclude\`."
 # find gives a finding of each, a line of KEY, MESSAGE, FILE and LINE, separated by tabs. file,
 # pull and commit find those of a file, a pull request and a commit, line by line. file reads the
 # path of a file added or renamed, and numbers each line of the new side from its hunk's header,
-# @@ -OLD +NEW @@, to read the lines added. A file that changes with no patch takes a note.
+# @@ -OLD +NEW @@, to read the lines added. A file that changes with no patch takes a note. pull
+# skips the description's `Accepts:` lines, which quote the term that they accept.
 defs='($index | keys | join("|")) as $any
 | def terms: select(test($any; "i"))
     | gsub("(?<![A-Za-z0-9._~/-])/[A-Za-z0-9._-]+(/[A-Za-z0-9._-]*)*"; " ")
@@ -83,7 +84,7 @@ defs='($index | keys | join("|")) as $any
     | select(.text) | .line as $line | .text | find("The added line"; $path; $line));
   def pull: (.title | find("The title"; ""; "")),
     ((.body // "" | split("\n") | to_entries[]) as {key: $i, value: $text}
-        | $text | find("Line \($i + 1) of the description"; ""; ""));
+        | $text | select(test("^Accepts:") | not) | find("Line \($i + 1) of the description"; ""; ""));
   def commit: .sha[:7] as $sha | (.commit.message | split("\n")) as $lines
     | range($lines | length) as $i | $lines[$i]
     | find(if $i == 0 then "The subject of commit `\($sha)`"

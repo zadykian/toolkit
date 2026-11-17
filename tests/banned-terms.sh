@@ -73,6 +73,16 @@ matches 'cp /etc/hosts "/usr/share/misc" PATH=/opt/misc:/etc/utils'
 matches 'Read /etc/hosts, etc.' etc
 matches 'cp ./etc/x ~/misc https://example.test/utils' etc misc utils
 
+# A description accepts a finding with a footer, which quotes the term it accepts, and so makes no
+# finding of its own.
+start accepts-a-finding-of-a-file
+answer repos/o/r/pulls/1 "$(pull "$(jq -n --arg body $'# T\n\nAccepts: banned-terms 0 src/git.sh: git\'s credential.helper key' \
+    '{title: "feat: add it", body: $body}')")"
+files "$(changed src/git.sh $'@@ -0,0 +1 @@\n+\thelper = x' added)"
+check banned-terms
+warnings 0
+summarizes "Reason: git's credential.helper key"
+
 start skips-a-path-from-the-root-in-a-line
 files "$(changed mac.yml $'@@ -1 +1 @@\n+  ~/Library/LaunchAgents/a.plist /etc/ws-tunnel \\')"
 check banned-terms
