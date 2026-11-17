@@ -183,13 +183,19 @@ but the title $(quote "$title") has no \`!\`."
 fi
 
 rule length "The description is over $max words" "$url" "Cut the description to $max words, \
-outside code blocks and HTML comments: one to three sentences of problem, and a bullet for each \
-high-level change. Leave the details to the commits.
+outside code blocks, HTML comments, the title and the footers: one to three sentences of \
+problem, and a bullet for each high-level change. Leave the details to the commits.
 
 $(template "$problem_md" "$changes_md")"
-prose=''
-for i in "${!kinds[@]}"; do [ "${kinds[i]}" = code ] || prose+=${texts[i]}$'\n'; done
+# The words of the prose: the lines above the footers, and so above any attribution line, outside
+# code blocks and the title's heading.
+read -r from _ <<<"$(footers)"
+prose='' title_end=-1
+[ "$t" = -1 ] || title_end=${h_ends[t]}
+for ((i = title_end + 1; i < from; i++)); do
+    [ "${kinds[i]}" = code ] || prose+=${texts[i]}$'\n'
+done
 count=$(($(words "$prose")))
-((count <= max)) || finding length "The description holds $count words, outside code blocks and \
-HTML comments: $((count - max)) over $max."
+((count <= max)) || finding length "The description holds $count words, outside code blocks, HTML \
+comments, the title and the footers: $((count - max)) over $max."
 report_finish

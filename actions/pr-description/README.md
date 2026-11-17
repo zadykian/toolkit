@@ -40,7 +40,7 @@ HTML comment or a code block is no prose: a template's comments, left alone, are
 | `changes` | `## Changes` is missing, comes before Problem, or holds no bullet |
 | `sections` | A heading other than the title's and the two, or one out of order or repeated |
 | `breaking` | The title has `!`, but no `BREAKING CHANGE:` footer ends the body; or vice versa |
-| `length` | The description holds over 200 words, outside code blocks and HTML comments |
+| `length` | The description holds over 200 words, outside code blocks, HTML comments, the title, the footers and the attribution line |
 
 A word is a run of characters between spaces, other than punctuation alone, such as a bullet's
 `-`.

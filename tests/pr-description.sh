@@ -186,12 +186,30 @@ describe warns-on-a-footer-without-a-bang "$clean$footer"
 warns "The description has a \`BREAKING CHANGE:\` footer, line 11, but the title"
 warnings 1
 
-# The title's heading holds 4 words, the rest of $edge and $changes 8, and $pad the other 188.
-pad=$(printf ' word%.0s' $(seq 188))
+# The rest of $edge and $changes hold 8 words, and $pad the other 192. The title's 4 count none.
+pad=$(printf ' word%.0s' $(seq 192))
 edge=$head$problem$pad$'\n\n```\nnone of these count\n```\n<!-- nor -->'
 describe passes-200-words "$edge$changes"
 warnings 0
 
 describe warns-on-201-words "$edge"$' One.'"$changes"
-warns "The description holds 201 words, outside code blocks and HTML comments: 1 over 200."
+warns "The description holds 201 words, outside code blocks, HTML comments, the title and the"
+warns "footers: 1 over 200."
 warnings 1
+
+# The footers and the attribution line, which hold words too, count none either.
+foot=$'\n\nRefs: #2, which the notes say,\n  and #3.\nSee-Also: the v1 inputs'
+describe passes-200-words-and-footers "$edge$changes$foot"
+warnings 0
+
+describe passes-200-words-and-an-attribution "$edge$changes$foot$by"
+warnings 0
+
+describe warns-on-201-words-and-footers "$edge"$' One.'"$changes$foot$by"
+warns "The description holds 201 words, outside code blocks, HTML comments, the title and the"
+warnings 1
+
+# Prose above a level-1 heading that is no title counts, as the title's heading alone does not.
+prose=$(printf 'word %.0s' $(seq 250))
+describe warns-on-prose-above-a-level-1-heading "$prose"$'\n\n# feat: x\n\n'"$problem$changes"
+warns "The description holds 260 words, outside code blocks"

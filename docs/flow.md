@@ -16,10 +16,11 @@ commits in a git repository, or as `/flow:atomic-commits`. To link a stack on Gi
 
 A pull request's description opens with its title, word for word, in its one level-1 heading,
 `# {NAME}`. Then come `## Problem`, one to three sentences, and `## Changes`, bullets by behavior.
-A `BREAKING CHANGE:` footer ends it where the title has `!`. It runs to 200 words at most, the
-title's among them. A repository copies [the skill's template][pr-template] to
-`.github/pull_request_template.md`, and GitHub then fills each new pull request's description
-with that form, where the author puts the title in place of `{NAME}`.
+A `BREAKING CHANGE:` footer ends it where the title has `!`. It runs to 200 words at most, not
+counting the title, the footers and the attribution line. A repository copies
+[the skill's template][pr-template] to `.github/pull_request_template.md`, and GitHub then fills
+each new pull request's description with that form, where the author puts the title in place of
+`{NAME}`.
 
 In CI, the toolkit's [`atomic-commits` action][ac-action] warns on a pull request whose commits,
 size, stack or title break the skill's rules, and the [`pr-description` action][pd-action] on its

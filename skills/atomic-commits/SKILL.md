@@ -236,8 +236,8 @@ BREAKING CHANGE: what changed, and what callers must do.
 - `## Problem` follows it: one to three sentences, and the issue it closes, if any.
 - `## Changes` holds bullets by behavior, not by file.
 - No other sections or headings, at any level. GitHub shows a PR's place in its stack, so the
-  description doesn't. 200 words at most, not counting code blocks and HTML comments, but counting
-  the title.
+  description doesn't. 200 words at most, not counting code blocks, HTML comments, the title,
+  the footers (the last paragraph of `Token: value` lines) or the attribution line.
 
 ## 7. Verify
 
