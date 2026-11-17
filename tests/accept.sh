@@ -33,3 +33,9 @@ CHECK
 warns "::Elsewhere.%0AThe rule: https://example.test/a"
 warns "::Of Rule B."
 warnings 2
+
+# GitHub keeps the \r\n that a browser sent, which an attribution line ends the footers after.
+setup reads-a-description-with-crlf-line-ends
+described $'# T\r\n\r\nAccepts: probe a: Names of git.\r\n\r\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\r\n'
+probe <<<"finding a 'Found.'"
+warnings 0

@@ -256,10 +256,13 @@ report_comment() {
 # report_finish reports the findings, and exits 0. A comment's refusal takes one of the 10
 # warnings.
 report_finish() {
-    local head updated report error shown='' limit=10
+    local head updated report error shown='' limit=10 pull body
     if [ -n "${PR-}" ]; then
-        head=$(gh api "repos/$GH_REPO/pulls/$PR" --jq .head.sha)
-        report_accept "$(gh api "repos/$GH_REPO/pulls/$PR" --jq '.body // ""')"
+        pull=$(gh api "repos/$GH_REPO/pulls/$PR")
+        head=$(jq -r .head.sha <<<"$pull")
+        # GitHub keeps the line ends that a browser sent, \r\n.
+        body=$(jq -r '.body // ""' <<<"$pull")
+        report_accept "${body//$'\r'/}"
         report=$(report_text 'does not block the merge' "\`${head:0:7}\`")
         shown=$(report_shown "$head") || shown=''
     else
