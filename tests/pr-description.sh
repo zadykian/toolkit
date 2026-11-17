@@ -239,3 +239,8 @@ warnings 1
 prose=$(printf 'word %.0s' $(seq 250))
 describe warns-on-prose-above-a-level-1-heading "$prose"$'\n\n# feat: x\n\n'"$problem$changes"
 warns "The description holds 260 words, outside code blocks"
+
+# An Accepts footer stands beside the BREAKING CHANGE: footer.
+titled passes-a-breaking-change-and-an-accepts 'feat!: drop it' \
+    "$problem$changes"$'\n\nAccepts: atomic-commits pr-size: A rename.\nBREAKING CHANGE: it is gone.'
+warnings 0
