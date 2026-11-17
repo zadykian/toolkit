@@ -149,34 +149,36 @@ each once."
 done
 
 rule breaking "The title's ! and the BREAKING CHANGE: footer do not match" "$url" "A breaking \
-change has both: \`!\` before the title's colon, as \`feat(scope)!: ...\`, and the footer, as \
-the description's last paragraph. Only an attribution line, such as \`🤖 Generated \
+change has both: \`!\` before the title's colon, as \`feat(scope)!: ...\`, and the footer, one of \
+the footers of the description's last paragraph. Only an attribution line, such as \`🤖 Generated \
 with [Claude Code](...)\`, may follow it. Where nothing breaks, drop both.
 
 $(template "$footer_md")"
 bang='^[[:alpha:]]+(\([^()]*\))?!:' token='^BREAKING[ -]CHANGE:[[:blank:]]+[^[:blank:]]'
-# The description's last line, above an attribution line, such as Claude Code's, that may end it.
-end=$(filled $((${#kinds[@]} - 1))) last=-1 footer=-1 by='^(🤖 )?Generated with '
-if ((end >= 0)) && [[ ${texts[end]} =~ $by ]]; then end=$(filled $((end - 1))); fi
-# The first lines of the last paragraph and of the first footer, which open after a blank line.
+# The description's footers, above an attribution line, such as Claude Code's, that may end it.
+read -r from end <<<"$(footers)"
+last=-1 footer=-1
+# The first line of the last paragraph, which opens after a blank line.
 for ((i = 0; i <= end; i++)); do
     if [ "${kinds[i]}" = text ] && [ -n "${texts[i]//[[:blank:]]/}" ] && { ((i == 0)) ||
         [ "${kinds[i - 1]}" != text ] || [ -z "${texts[i - 1]//[[:blank:]]/}" ]; }; then
         last=$i
-        [[ $footer != -1 || ! ${texts[i]} =~ $token ]] || footer=$i
     fi
 done
-ends='' footed=false
+# The first footer that holds the token, among the footers, which may hold others beside it.
+for ((i = from; i <= end; i++)); do
+    [ "${kinds[i]}" = text ] && [[ ${texts[i]} =~ $token ]] && { footer=$i && break; }
+done
+ends=''
 if ((end >= 0)) && [ "${kinds[end]}" = code ]; then
     ends=': it ends in a code block'
 elif ((end >= 0)); then
     [ "${kinds[end]}" = text ] || last=$end
-    [[ ! ${texts[last]} =~ $token ]] || footed=true
     ends=": it ends in $(quote "${texts[last]}")"
 fi
-if [[ $title =~ $bang ]] && ! $footed; then
-    finding breaking "The title $(quote "$title") has \`!\`, but the description does not end in \
-a \`BREAKING CHANGE:\` footer$ends."
+if [[ $title =~ $bang ]] && [ "$footer" = -1 ]; then
+    finding breaking "The title $(quote "$title") has \`!\`, but the description has no \
+\`BREAKING CHANGE:\` footer$ends."
 elif [[ ! $title =~ $bang ]] && [ "$footer" != -1 ]; then
     finding breaking "The description has a \`BREAKING CHANGE:\` footer, line $((footer + 1)), \
 but the title $(quote "$title") has no \`!\`."

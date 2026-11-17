@@ -50,9 +50,9 @@ trailers_of() {
 # where `BREAKING CHANGE` is a token, or continues the line before it. An attribution line, as
 # `🤖 Generated with [Claude Code](...)`, ends the description below them, and is no footer.
 footers() {
-    local last lines=() i first
+    local last lines=() i first by='^(🤖 )?Generated with '
     last=$(filled $((${#kinds[@]} - 1)))
-    if ((last >= 0)) && [[ ${texts[last]} =~ ^(🤖\ )?Generated\ with\  ]]; then
+    if ((last >= 0)) && [[ ${texts[last]} =~ $by ]]; then
         last=$(filled $((last - 1)))
     fi
     for ((i = 0; i <= last; i++)); do

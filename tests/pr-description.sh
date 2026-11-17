@@ -170,16 +170,26 @@ warnings 0
 titled passes-a-footer-and-an-attribution 'feat!: drop it' "$problem$changes${footer/ /-}$by"
 warnings 0
 
+# The BREAKING CHANGE: footer may be any of the footers, as below another.
+refs=$'\n\nRefs: #1\nBREAKING CHANGE: the v1 inputs are gone.'
+titled passes-a-breaking-footer-below-another 'feat!: drop it' "$problem$changes$refs"
+warnings 0
+
+titled warns-on-a-breaking-footer-below-another-and-no-bang 'feat: drop it' \
+    "$problem$changes$refs"
+warns "The description has a \`BREAKING CHANGE:\` footer, line 12, but the title"
+warnings 1
+
 titled passes-an-attribution 'fix: keep it!' "$problem$changes$by<!-- end -->"
 warnings 0
 
 titled warns-on-a-bang-without-a-footer 'feat(api)!: drop the v1 inputs' "$problem$changes"
-warns "The title \`feat(api)!: drop the v1 inputs\` has \`!\`, but the description does not end in"
-warns "a \`BREAKING CHANGE:\` footer: it ends in \`- Add it.\`"
+warns "The title \`feat(api)!: drop the v1 inputs\` has \`!\`, but the description has no"
+warns "\`BREAKING CHANGE:\` footer: it ends in \`- Add it.\`"
 warnings 1
 
 titled warns-on-text-after-the-footer 'feat!: drop it' "$problem$changes$footer"$'\n\nThanks!'
-warns "does not end in a \`BREAKING CHANGE:\` footer: it ends in \`Thanks!\`"
+warns "has no \`BREAKING CHANGE:\` footer: it ends in \`Thanks!\`"
 warnings 1
 
 describe warns-on-a-footer-without-a-bang "$clean$footer"

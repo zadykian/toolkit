@@ -181,7 +181,7 @@ EOF
 
 # The check's pattern of an attribution line, (MARK )?TEXT, as TEXT or MARK TEXT, the skill's forms.
 setup holds-the-line-that-may-follow-a-footer
-agree "$(values "$check_pd" " by='\^(\(.+ \)\?[^']*[^' ]) '\$" |
+agree "$(values actions/lib/markdown.sh " by='\^(\(.+ \)\?[^']*[^' ]) '\$" |
     sed -E 's/\t\((.+) \)\?(.+)$/\t\2 or \1 \2/')" \
     "$(values "$skill_ac" 'that starts (`[^`]+` or `[^`]+`)' | tr -d '`')"
 
