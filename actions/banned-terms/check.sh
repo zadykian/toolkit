@@ -19,8 +19,8 @@ skill=$(file_url skills/banned-terms/SKILL.md)
 # one array of groups, each {"terms": [TERM...], "hint": HINT}, as group checks: a TERM at least,
 # each with a letter or a digit, and a HINT that is not blank. A term splits at each character
 # other than a letter or a digit. config holds on its first line the index, {TERM: KEY}, then each
-# group's rule, its KEY, TITLE and HINT, whose line ends become spaces. A group's key is its
-# number. config is empty where the file holds no such array.
+# group's rule, its KEY, TITLE and HINT, whose line ends become spaces. A group's key is its first
+# term, which an Accepts line names. config is empty where the file holds no such array.
 list=skills/banned-terms/terms.json
 json=$GITHUB_ACTION_PATH/../../$list
 [ -f "$json" ] || cannot_check "$list, which lists the terms, is missing."
@@ -30,10 +30,9 @@ config=$(jq -sr 'def group: type == "object" and (.hint | type == "string" and t
             and all(.[]; type == "string" and test("[A-Za-z0-9]")));
     select(length == 1 and (.[0] | type == "array" and all(.[]; group))) | .[0]
     | map({terms: [.terms[] | ascii_downcase | splits("[^a-z0-9]+") | select(. != "")],
-        hint: (.hint | gsub("\n"; " "))})
-    | (reduce to_entries[] as $group ({}; .[$group.value.terms[]] = "\($group.key)")) as $index
-    | ($index | tojson), (to_entries[] | ["\(.key)", (.value.terms | join(", ")), .value.hint]
-        | join("\t"))' "$json")
+        hint: (.hint | gsub("\n"; " "))} | .key = .terms[0])
+    | (reduce .[] as $group ({}; .[$group.terms[]] = $group.key)) as $index
+    | ($index | tojson), (.[] | [.key, (.terms | join(", ")), .hint] | join("\t"))' "$json")
 [ -n "$config" ] || cannot_check "$list holds no array of groups, each of its terms and a hint."
 {
     read -r index

@@ -76,7 +76,7 @@ matches 'cp ./etc/x ~/misc https://example.test/utils' etc misc utils
 # A description accepts a finding with a footer, which quotes the term it accepts, and so makes no
 # finding of its own.
 start accepts-a-finding-of-a-file
-answer repos/o/r/pulls/1 "$(pull "$(jq -n --arg body $'# T\n\nAccepts: banned-terms 0 src/git.sh: git\'s credential.helper key' \
+answer repos/o/r/pulls/1 "$(pull "$(jq -n --arg body $'# T\n\nAccepts: banned-terms helper src/git.sh: git\'s credential.helper key' \
     '{title: "feat: add it", body: $body}')")"
 files "$(changed src/git.sh $'@@ -0,0 +1 @@\n+\thelper = x' added)"
 check banned-terms
@@ -96,7 +96,7 @@ warnings 1
 summarizes "#### helper, helpers
 
 The rule: $skill
-Its key: \`0\`
+Its key: \`helper\`
 
 - The title says \`helper\`: \`feat: add a string helper and its helper test\`
 
@@ -113,19 +113,17 @@ start warns-on-each-group-of-the-skills-terms
 title="feat: $(cut -f1 <<<"$groups" | sed 's/,.*//' | paste -sd ' ' -)"
 titled "$title"
 check banned-terms
-n=0
 while IFS=$'\t' read -r terms hint; do
     summarizes "#### $terms
 
 The rule: $skill
-Its key: \`$n\`
+Its key: \`${terms%%,*}\`
 
 - The title says \`${terms%%,*}\`: \`$title\`
 
 How to fix it:
 
 $hint"
-    n=$((n + 1))
 done <<<"$groups"
 
 # A term is lowercased, and splits at each character other than a letter or a digit. A hint's
