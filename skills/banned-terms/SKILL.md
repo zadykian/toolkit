@@ -58,10 +58,11 @@ prose. [The action](#the-action) reads the same file.
 
 A term matches a whole word, in any case. A text splits into words at each character other than a
 letter or a digit, and again at each hump of camelCase and PascalCase. So `HTTPHelper` gives
-`http` and `helper`.
+`http` and `helper`. A `\n`, `\r` or `\t` reads as a space too, so `\thelper` gives `helper` and `thelper`.
 
 A path from the root names the system's files, not yours, so no term matches in it. It starts at
-a `/` with no letter, digit, `.`, `_`, `-`, `~` or `/` before it.
+a `/` with no letter, digit, `.`, `_`, `-`, `~`, `/` or `}` before it, nor a quote that closes a
+word. So `${ws}/etc` and `"$ws/root"/etc` read as `$ws/root/etc` does.
 
 - `StringHelper`, `str_utils.py` and `MiscStuff` match.
 - `utilize`, `helpful` and `etcd` don't, as none of their words is a term.

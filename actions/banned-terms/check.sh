@@ -46,9 +46,11 @@ with \`exclude\`."
 
 # The jq functions of a scan. terms gives each term of $index that the text . holds, once: its
 # tokens split at each character other than a letter or a digit, then at each hump of camelCase,
-# as getHTTPResponse gives get, http and response. It drops each path from the root first, as
-# /etc/hosts, whose names are the system's: a / that no letter, digit, ., _, -, ~ or / precedes,
-# and the letters, digits, ., _, - and / after it. A test of the text first skips most lines.
+# as getHTTPResponse gives get, http and response. It reads \n, \r and \t as a space too, so
+# \tname gives name and tname. It drops each path from the root, as /etc/hosts, whose names
+# are the system's: a / that no letter, digit, ., _, -, ~, / or } precedes, nor a quote that
+# closes a word, and the letters, digits, ., _, - and / after it. A test of the text first skips
+# most lines.
 # find gives a finding of each, a line of KEY, MESSAGE, FILE and LINE, separated by tabs. file,
 # pull and commit find those of a file, a pull request and a commit, line by line. file reads the
 # path of a file added or renamed, and numbers each line of the new side from its hunk's header,
@@ -56,7 +58,8 @@ with \`exclude\`."
 # skips the description's `Accepts:` lines, which quote the term that they accept.
 defs='($index | keys | join("|")) as $any
 | def terms: select(test($any; "i"))
-    | gsub("(?<![A-Za-z0-9._~/-])/[A-Za-z0-9._-]+(/[A-Za-z0-9._-]*)*"; " ")
+    | gsub("\\\\(?<c>[nrt])(?<w>[A-Za-z0-9]*)"; " \(.c)\(.w) \(.w)")
+    | gsub("(?<![A-Za-z0-9._~/}-])(?<![A-Za-z0-9._~/}-][\"'"'"'`])/[A-Za-z0-9._-]+(/[A-Za-z0-9._-]*)*"; " ")
     | gsub("(?<a>[a-z0-9])(?<b>[A-Z])"; "\(.a) \(.b)")
     | gsub("(?<a>[A-Z])(?=[A-Z][a-z])"; "\(.a) ")
     | [ascii_downcase | splits("[^a-z0-9]+") | select($index[.])] | unique[];

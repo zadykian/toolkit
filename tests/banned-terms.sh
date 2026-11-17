@@ -71,6 +71,17 @@ matches 'utils2, Thingy and miscount'
 # A path from the root is the system's, as the files that /etc holds.
 matches 'cp /etc/hosts "/usr/share/misc" PATH=/opt/misc:/etc/utils'
 matches 'Read /etc/hosts, etc.' etc
+matches 'run \thelper = and \nmisc' helper misc
+matches '\rmisc' misc
+matches "\${ws}/etc" etc
+matches "\"\$ws/root\"/etc" etc
+matches "'\$ws'/etc" etc
+start matches-a-command-substitution-then-a-path
+titled "run \`pwd\`/etc"
+check banned-terms
+warns "::The title says \`etc\`"
+warnings 1
+matches "cp '/etc/misc' \`/usr/misc\`"
 matches 'cp ./etc/x ~/misc https://example.test/utils' etc misc utils
 
 # A description accepts a finding with a footer, which quotes the term it accepts, and so makes no
@@ -125,6 +136,15 @@ How to fix it:
 
 $hint"
 done <<<"$groups"
+
+# An escape reads both ways: as a space, and as the letters of a word, as in a Windows path.
+start reads-a-word-after-an-escape-both-ways
+listed '[{"terms": ["things", "thing"], "hint": "Say it"}]'
+titled 'feat: C:\things and \thing'
+check banned-terms "$tree"
+warns "::The title says \`things\`"
+warns "::The title says \`thing\`"
+warnings 2
 
 # A term is lowercased, and splits at each character other than a letter or a digit. A hint's
 # line ends become spaces.
