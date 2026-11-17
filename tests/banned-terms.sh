@@ -64,16 +64,25 @@ matches 'cp /etc/hosts "/usr/share/misc" PATH=/opt/misc:/etc/utils'
 matches 'Read /etc/hosts, etc.' etc
 matches 'run \thelper = and \nmisc' helper misc
 matches '\rmisc' misc
-matches "\${ws}/etc" etc
-matches "\"\$ws/root\"/etc" etc
-matches "'\$ws'/etc" etc
+matches "\${ws}/misc" misc
+matches "\"\$ws/root\"/misc" misc
+matches "'\$ws'/misc" misc
 start matches-a-command-substitution-then-a-path
-titled "run \`pwd\`/etc"
+titled "run \`pwd\`/misc"
 check banned-terms
-warns "::The title says \`etc\`"
+warns "::The title says \`misc\`"
 warnings 1
 matches "cp '/etc/misc' \`/usr/misc\`"
-matches 'cp ./etc/x ~/misc https://example.test/utils' etc misc utils
+matches 'cp ./stuff/x ~/misc https://example.test/utils' stuff misc utils
+# The list's well-known names hold a term, and give no finding.
+matches 't.Helper() and s.T().Helper(), for credential.https://x.test.helper'
+matches $'git config --get-regexp \'^credential\\..*helper$\', the credential helpers'
+matches '\thelper = \n\thelper = !gh auth git-credential, and helper ='
+matches "cp \$ws/root/etc/hosts \"\$ws\"/etc in etc/netplan, TZ=Etc/UTC"
+matches 'x.Helper()' helper
+matches 'helper = x' helper
+matches credentials_helper helper
+matches 'Add docs/etc.' etc
 
 # A description accepts a finding with a footer, which quotes the term it accepts, and so makes no
 # finding of its own.

@@ -1,7 +1,12 @@
 [
   {
     "terms": ["helper", "helpers"],
-    "hint": "Names no responsibility: name what it does"
+    "hint": "Names no responsibility: name what it does",
+    "except": [
+      "\\b(?:t|b|f|tb|T\\(\\))\\.Helper\\(\\)",
+      "\\b[Cc]redential\\\\?[. ]\\S*\\bhelpers?\\b",
+      "(?:\\\\t|(?<![A-Za-z0-9_]))helper = ?(?:\"?!|`|\\\\n|$)"
+    ]
   },
   {
     "terms": ["util", "utils", "utility", "utilities"],
@@ -17,7 +22,11 @@
   },
   {
     "terms": ["etc"],
-    "hint": "An open list: name each item, or lead the examples with \"such as\""
+    "hint": "An open list: name each item, or lead the examples with \"such as\"",
+    "except": [
+      "\\b[Ee]tc/",
+      "/etc(?![A-Za-z0-9_.,-])"
+    ]
   },
   {
     "terms": ["various"],

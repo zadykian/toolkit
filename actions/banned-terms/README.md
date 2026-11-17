@@ -51,9 +51,10 @@ digit, then before each hump of camelCase and PascalCase, and each token is lowe
 `HTTPHelper` gives `http` and `helper`, and `使用helper` gives `helper`. A `\n`, `\r` or `\t` reads
 as a space too, so `\thelper` gives `helper` and `thelper`.
 
-A group's `except` lists the regexes of well-known names that hold its terms. The action drops
-their matches from a text before it splits it, so they give no token. A regex matches in its own
-case.
+A group's `except` lists the regexes of well-known names that hold its terms, as Go's
+`t.Helper()`, git's `credential.helper` and Unix's `etc/`. The action drops their matches from a
+text before it splits it, so they give no token. A regex matches in its own case.
+[The skill](../../skills/banned-terms/SKILL.md#how-a-term-matches) lists the names.
 
 A path from the root names the system's files, so no token of it matches. It starts at a `/` with
 no ASCII letter or digit, `.`, `_`, `-`, `~`, `/` or `}` before it, nor a quote that closes a
@@ -62,7 +63,9 @@ word, and runs over the letters, digits, `.`, `_`, `-` and `/` after it.
 - `StringHelper`, `str_utils.py` and `MiscStuff` match.
 - `utilize`, `helpful`, `etcd` and `utils2` don't, as none of their tokens is a term.
 - `/etc/hosts`, `"/usr/share/misc"` and `PATH=/opt/misc` don't, as each is a path from the root.
-  `./etc`, `~/misc`, `https://example.com/utils`, `${ws}/etc` and `"$ws/root"/etc` match.
+  `./misc`, `~/misc`, `https://example.com/utils`, `${ws}/misc` and `"$ws/root"/misc` match.
+- `t.Helper()`, `credential.helper`, `$ws/root/etc/hosts` and `Etc/UTC` don't, as each is a
+  well-known name. `x.Helper()` and `docs/etc.` match.
 
 A line gives one finding a term, even where it holds the term twice.
 
