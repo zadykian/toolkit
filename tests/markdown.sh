@@ -50,3 +50,9 @@ long=$(printf 'a%.0s' $(seq 61))
 same "quote ' x '" "$(quote ' x ')" '`x`'
 same 'quote of a backtick' "$(quote 'a `b`')" '`` a `b` ``'
 same 'quote of 61 characters' "$(quote "$long")" "\`${long:0:59}…\`"
+
+# trailers prints the index of the first trailer of a commit message's lines, or their count.
+setup reads-the-trailers-of-a-message
+same 'trailers of a body' "$(trailers 'feat: x' '' 'Why: y' '' 'Fixes: #1' ' more' 'Co-Authored-By: A')" 4
+same 'trailers of a paragraph' "$(trailers 'feat: x' '' 'Text' 'Fixes: #1')" 4
+same 'trailers of a header' "$(trailers 'feat: x' 'Fixes: #1')" 2

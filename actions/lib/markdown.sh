@@ -8,6 +8,7 @@
 #   section I            prints the text lines of the heading I's section, up to the next heading
 #   filled LINE          prints the index of the last line, at or before LINE, that holds something
 #   quote TEXT           prints TEXT as a Markdown code span, cut to 60 characters
+#   trailers LINES...    prints the index of the first trailer among the message LINES
 #
 # markdown_read sets the arrays of the lines, kinds and texts, and of the headings, h_starts,
 # h_ends, h_levels, h_texts and h_quotes, as its comments say. A heading may be an ATX one, as
@@ -20,6 +21,22 @@ quote() {
     text=${text#"${text%%[![:blank:]]*}"} text=${text%"${text##*[![:blank:]]}"}
     [ "${#text}" -le 60 ] || text="${text:0:59}…"
     if [[ $text == *"\`"* ]]; then printf "\`\` %s \`\`" "$text"; else printf "\`%s\`" "$text"; fi
+}
+
+# trailers prints the index of the first trailer among the message lines $@, or $# where they end
+# in none. As git reads them, the trailers are the last paragraph, other than the header's, where
+# each line is `Token: value` or continues the line before it.
+trailers() {
+    local lines=("$@") start=$# i
+    while [ "$start" -gt 2 ] && [ -n "${lines[start - 1]//[[:space:]]/}" ]; do
+        start=$((start - 1))
+    done
+    { [ "$start" -gt 1 ] && [ -z "${lines[start - 1]//[[:space:]]/}" ]; } || start=$#
+    for ((i = start; i < $#; i++)); do
+        [[ ${lines[i]} =~ ^[[:alnum:]-]+[[:blank:]]*: ]] ||
+            { [ "$i" -gt "$start" ] && [[ ${lines[i]} =~ ^[[:blank:]] ]]; } || start=$#
+    done
+    echo "$start"
 }
 
 # markdown_heading records a heading from the line $1 to the line $2, of the level $3 and the
