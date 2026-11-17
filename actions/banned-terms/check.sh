@@ -17,25 +17,32 @@ skill=$(file_url skills/banned-terms/SKILL.md)
 # The list is skills/banned-terms/terms.json, which the skill reads too, and no input changes it.
 # The runner downloads the whole repository at the action's ref, skills/ included. The file holds
 # one array of groups, each {"terms": [TERM...], "hint": HINT}, as group checks: a TERM at least,
-# each with a letter or a digit, and a HINT that is not blank. A term splits at each character
-# other than a letter or a digit. config holds on its first line the index, {TERM: KEY}, then each
-# group's rule, its KEY, TITLE and HINT, whose line ends become spaces. A group's key is its first
-# term, which an Accepts line names. config is empty where the file holds no such array.
+# each with a letter or a digit, and a HINT that is not blank. A group's "except", where it has one,
+# lists the regexes of well-known names that hold its terms, each of one line, that compile. A term
+# splits at each character other than a letter or a digit. config holds on its first line the index,
+# {TERM: KEY}, on its second the groups' regexes as one JSON string, then each group's rule, its
+# KEY, TITLE and HINT, whose line ends become spaces. A group's key is its first term, which an
+# Accepts line names. config is empty where the file holds no such array.
 list=skills/banned-terms/terms.json
 json=$GITHUB_ACTION_PATH/../../$list
 [ -f "$json" ] || cannot_check "$list, which lists the terms, is missing."
 jq empty "$json" 2>/dev/null || cannot_check "$list is not valid JSON."
 config=$(jq -sr 'def group: type == "object" and (.hint | type == "string" and test("\\S"))
         and (.terms | type == "array" and length > 0
-            and all(.[]; type == "string" and test("[A-Za-z0-9]")));
+            and all(.[]; type == "string" and test("[A-Za-z0-9]")))
+        and (.except // [] | type == "array" and all(.[]; type == "string" and length > 0
+            and (contains("\n") | not) and (. as $re | try ("" | test($re) | true) catch false)));
     select(length == 1 and (.[0] | type == "array" and all(.[]; group))) | .[0]
+    | ([.[] | .except // [] | .[] | "(?:\(.))"] | join("|")) as $except
     | map({terms: [.terms[] | ascii_downcase | splits("[^a-z0-9]+") | select(. != "")],
         hint: (.hint | gsub("\n"; " "))} | .key = .terms[0])
     | (reduce .[] as $group ({}; .[$group.terms[]] = $group.key)) as $index
-    | ($index | tojson), (.[] | [.key, (.terms | join(", ")), .hint] | join("\t"))' "$json")
+    | ($index | tojson), ($except | tojson),
+        (.[] | [.key, (.terms | join(", ")), .hint] | join("\t"))' "$json")
 [ -n "$config" ] || cannot_check "$list holds no array of groups, each of its terms and a hint."
 {
     read -r index
+    read -r except
     [ "$index" != '{}' ] || cannot_check "$list lists no term."
     while IFS=$'\t' read -r key title hint; do rule "$key" "$title" "$skill" "$hint"; done
 } <<<"$config"
@@ -44,8 +51,9 @@ rule unread 'Files with no patch' "$readme#limits" "GitHub gives no patch of a b
 a large one, so the check reads its path alone. Check the text that it adds by hand, or skip it \
 with \`exclude\`."
 
-# The jq functions of a scan. terms gives each term of $index that the text . holds, once: its
-# tokens split at each character other than a letter or a digit, then at each hump of camelCase,
+# The jq functions of a scan. terms gives each term of $index that the text . holds, once. It
+# first drops each match of $except, a well-known name, as Go's t.Helper(). It splits its
+# tokens at each character other than a letter or a digit, then at each hump of camelCase,
 # as getHTTPResponse gives get, http and response. It reads \n, \r and \t as a space too, so
 # \tname gives name and tname. It drops each path from the root, as /etc/hosts, whose names
 # are the system's: a / that no letter, digit, ., _, -, ~, / or } precedes, nor a quote that
@@ -57,7 +65,7 @@ with \`exclude\`."
 # @@ -OLD +NEW @@, to read the lines added. A file that changes with no patch takes a note. pull
 # skips the description's `Accepts:` lines, which quote the term that they accept.
 defs='($index | keys | join("|")) as $any
-| def terms: select(test($any; "i"))
+| def terms: select(test($any; "i")) | if $except == "" then . else gsub($except; " ") end
     | gsub("\\\\(?<c>[nrt])(?<w>[A-Za-z0-9]*)"; " \(.c)\(.w) \(.w)")
     | gsub("(?<![A-Za-z0-9._~/}-])(?<![A-Za-z0-9._~/}-][\"'"'"'`])/[A-Za-z0-9._-]+(/[A-Za-z0-9._-]*)*"; " ")
     | gsub("(?<a>[a-z0-9])(?<b>[A-Z])"; "\(.a) \(.b)")
@@ -94,7 +102,7 @@ defs='($index | keys | join("|")) as $any
 
 # scan prints the findings of the jq filter $1, of defs, on its input.
 scan() {
-    jq -r --argjson index "$index" "$defs $1"
+    jq -r --argjson index "$index" --argjson except "$except" "$defs $1"
 }
 
 found=$(gh api --paginate "repos/$GH_REPO/pulls/$PR/files?per_page=100" | scan '.[] | file')$'\n'

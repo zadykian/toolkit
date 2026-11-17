@@ -45,6 +45,15 @@ warnings 3
 summarizes $'How to fix it:\n\nSay it'
 summarizes $'How to fix it:\n\nDrop it'
 
+# A group's except drops each match of its regexes, as they are written, before the check reads
+# the words.
+start drops-the-matches-of-a-groups-except
+listed '[{"terms": ["foo"], "hint": "Say it", "except": ["\\.Foo\\(\\)", "foo-bar"]}]'
+titled 'feat: t.Foo() and foo-bar, then FOO'
+check banned-terms "$tree"
+warns "::The title says \`foo\`"
+warnings 1
+
 start warns-without-the-list
 listed
 check banned-terms "$tree"
@@ -58,10 +67,14 @@ warns '::warning::banned-terms could not check #1: skills/banned-terms/terms.jso
 warnings 1
 
 # Each of these is no array of groups: no value, two, no array, a group of no object, terms of no
-# array, no term, a term with no letter or digit, no hint, and a blank one.
+# array, no term, a term with no letter or digit, no hint, a blank one, an except of no array, an
+# empty regex, and one that does not compile.
 for json in '' '[] []' '{}' '["foo"]' '[{"terms": "foo", "hint": "Say it"}]' \
     '[{"terms": [], "hint": "Say it"}]' '[{"terms": ["--"], "hint": "Say it"}]' \
-    '[{"terms": ["foo"]}]' '[{"terms": ["foo"], "hint": " "}]'; do
+    '[{"terms": ["foo"]}]' '[{"terms": ["foo"], "hint": " "}]' \
+    '[{"terms": ["foo"], "hint": "Say it", "except": "x"}]' \
+    '[{"terms": ["foo"], "hint": "Say it", "except": [""]}]' \
+    '[{"terms": ["foo"], "hint": "Say it", "except": ["("]}]'; do
     start "warns-where-the-list-is-malformed: $json"
     listed "$json"
     check banned-terms "$tree"

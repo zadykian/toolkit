@@ -51,6 +51,10 @@ digit, then before each hump of camelCase and PascalCase, and each token is lowe
 `HTTPHelper` gives `http` and `helper`, and `使用helper` gives `helper`. A `\n`, `\r` or `\t` reads
 as a space too, so `\thelper` gives `helper` and `thelper`.
 
+A group's `except` lists the regexes of well-known names that hold its terms. The action drops
+their matches from a text before it splits it, so they give no token. A regex matches in its own
+case.
+
 A path from the root names the system's files, so no token of it matches. It starts at a `/` with
 no ASCII letter or digit, `.`, `_`, `-`, `~`, `/` or `}` before it, nor a quote that closes a
 word, and runs over the letters, digits, `.`, `_`, `-` and `/` after it.
