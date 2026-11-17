@@ -92,6 +92,17 @@ warns 'Commit `2222222 feat: add z`: line 3 is 79 characters long'
 warns 'Commit `2222222 feat: add z`: line 5 is 88 characters long'
 warnings 3
 
+# BREAKING CHANGE is no token for git, so a paragraph that holds it is body, as wide as it may not be.
+setup warns-on-a-wide-breaking-footer
+answer repos/o/r/pulls/1 "$(pull '{"title": "feat!: drop y"}')"
+commits "feat!: drop y
+
+BREAKING CHANGE: $wide
+Refs: #1"
+atomic
+warns "Commit \`1111111 feat!: drop y\`: line 3 is 90 characters long"
+warnings 1
+
 setup warns-on-a-breaking-change-marked-one-way
 answer repos/o/r/pulls/1 "$(pull '{"title": "feat!: drop y"}')"
 commits 'feat!: drop y' $'feat: drop z\n\nBREAKING CHANGE: z is gone.' \

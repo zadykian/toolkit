@@ -56,3 +56,21 @@ setup reads-the-trailers-of-a-message
 same 'trailers of a body' "$(trailers 'feat: x' '' 'Why: y' '' 'Fixes: #1' ' more' 'Co-Authored-By: A')" 4
 same 'trailers of a paragraph' "$(trailers 'feat: x' '' 'Text' 'Fixes: #1')" 4
 same 'trailers of a header' "$(trailers 'feat: x' 'Fixes: #1')" 2
+same 'trailers, as git reads them' "$(trailers 'feat: x' '' 'BREAKING CHANGE: y' 'Refs: #1')" 4
+
+# footers prints the first and last lines of the footers, above an attribution line.
+setup reads-the-footers-of-a-description
+by='🤖 Generated with [Claude Code](https://claude.com/claude-code)'
+body=$'# T\n\n## Problem\n\nA.\n\nBREAKING CHANGE: x,\n  and y.\nRefs: #1'
+markdown_read "$body"
+same 'footers' "$(footers)" '6 8'
+markdown_read "$body"$'\n\n'"$by"$'\n'
+same 'footers above an attribution' "$(footers)" '6 8'
+markdown_read $'# T\n\nA.\n\nText\nRefs: #1'
+same 'footers of a paragraph' "$(footers)" '6 5'
+markdown_read $'# T\n\nRefs: #1'
+same 'footers right after the title' "$(footers)" '2 2'
+markdown_read $'# T\n\nA.\n\n```\nRefs: #1\n```'
+same 'footers in a code block' "$(footers)" '7 6'
+markdown_read ''
+same 'footers of an empty text' "$(footers)" '0 -1'

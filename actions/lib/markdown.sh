@@ -9,6 +9,7 @@
 #   filled LINE          prints the index of the last line, at or before LINE, that holds something
 #   quote TEXT           prints TEXT as a Markdown code span, cut to 60 characters
 #   trailers LINES...    prints the index of the first trailer among the message LINES
+#   footers              prints the first and last lines of the description's footers
 #
 # markdown_read sets the arrays of the lines, kinds and texts, and of the headings, h_starts,
 # h_ends, h_levels, h_texts and h_quotes, as its comments say. A heading may be an ATX one, as
@@ -26,17 +27,40 @@ quote() {
 # trailers prints the index of the first trailer among the message lines $@, or $# where they end
 # in none. As git reads them, the trailers are the last paragraph, other than the header's, where
 # each line is `Token: value` or continues the line before it.
-trailers() {
-    local lines=("$@") start=$# i
+trailers() { trailers_of '[[:alnum:]-]+' "$@"; }
+
+# trailers_of prints what trailers does, where the regex $1 matches a line's token.
+trailers_of() {
+    local token=$1 lines=("${@:2}") i start=$(($# - 1))
+    local n=$start
     while [ "$start" -gt 2 ] && [ -n "${lines[start - 1]//[[:space:]]/}" ]; do
         start=$((start - 1))
     done
-    { [ "$start" -gt 1 ] && [ -z "${lines[start - 1]//[[:space:]]/}" ]; } || start=$#
-    for ((i = start; i < $#; i++)); do
-        [[ ${lines[i]} =~ ^[[:alnum:]-]+[[:blank:]]*: ]] ||
-            { [ "$i" -gt "$start" ] && [[ ${lines[i]} =~ ^[[:blank:]] ]]; } || start=$#
+    { [ "$start" -gt 1 ] && [ -z "${lines[start - 1]//[[:space:]]/}" ]; } || start=$n
+    for ((i = start; i < n; i++)); do
+        [[ ${lines[i]} =~ ^($token)[[:blank:]]*: ]] ||
+            { [ "$i" -gt "$start" ] && [[ ${lines[i]} =~ ^[[:blank:]] ]]; } || start=$n
     done
     echo "$start"
+}
+
+# footers prints "FIRST LAST", the indexes of the first and last line of the description's footers,
+# or LAST < FIRST where it has none. Call it after markdown_read. As `trailers` reads a commit's,
+# the footers are the last paragraph, other than the first, where each line is `Token: value`,
+# where `BREAKING CHANGE` is a token, or continues the line before it. An attribution line, as
+# `🤖 Generated with [Claude Code](...)`, ends the description below them, and is no footer.
+footers() {
+    local last lines=() i first
+    last=$(filled $((${#kinds[@]} - 1)))
+    if ((last >= 0)) && [[ ${texts[last]} =~ ^(🤖\ )?Generated\ with\  ]]; then
+        last=$(filled $((last - 1)))
+    fi
+    for ((i = 0; i <= last; i++)); do
+        if [ "${kinds[i]}" = text ]; then lines+=("${texts[i]}"); else lines+=(''); fi
+    done
+    first=$(trailers_of '[[:alnum:]-]+|BREAKING CHANGE' "${lines[@]}")
+    if ((last < 0)) || ((first >= ${#lines[@]})); then first=$((last + 1)); fi
+    echo "$first $last"
 }
 
 # markdown_heading records a heading from the line $1 to the line $2, of the level $3 and the
