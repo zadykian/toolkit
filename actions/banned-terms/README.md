@@ -68,8 +68,15 @@ It reads the pull request through GitHub's API alone, and checks out nothing:
 1. The lines that it adds, from each file's patch: code, comments and docs alike. A finding shows
    inline in Files changed, at the line's number on the new side.
 2. The paths of the files that it adds or renames.
-3. Its title and its description, line by line.
+3. Its title and its description, line by line, but for its `Accepts:` lines.
 4. The message of each of its commits. A finding names the commit by its sha7 and subject.
+
+## Accepting a finding
+
+A footer of the description, `Accepts: banned-terms RULE [GLOB]: REASON`, accepts the
+findings of RULE, the first term of a group of terms.json, as `helper`. The report gives each
+rule's key in its section, lists each accepted finding with the reason, and warns no more.
+See [the skill](../../skills/atomic-commits/SKILL.md#6-stack-mechanics-git--238).
 
 ## Inputs
 

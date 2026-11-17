@@ -45,6 +45,12 @@ HTML comment or a code block is no prose: a template's comments, left alone, are
 A word is a run of characters between spaces, other than punctuation alone, such as a bullet's
 `-`.
 
+## Accepting a finding
+
+A footer of the description, `Accepts: pr-description RULE [GLOB]: REASON`, accepts the
+findings of RULE, a key such as `length`. The report lists each with the reason, and it
+warns no more. See [the skill](../../skills/atomic-commits/SKILL.md#6-stack-mechanics-git--238).
+
 ## Inputs
 
 | Input | Default | What it sets |

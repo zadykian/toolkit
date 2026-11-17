@@ -126,10 +126,6 @@ BREAKING CHANGE: ChargeClient is removed; call PaymentGateway.Charge
 instead.
 ```
 
-```text
-fix(checkout): stop double-charging on retried requests
-```
-
 A commit whose header starts `fixup!`, `squash!` or `amend!` is temporary and doesn't conform:
 autosquash it before pushing or reporting.
 
@@ -213,6 +209,12 @@ title: a merge commit in its body, a squash merge as its header. A breaking PR h
 and a `BREAKING CHANGE:` footer. Only an attribution line may follow the footers, one
 that starts `Generated with` or `🤖 Generated with`, and after that line paragraphs of a link alone.
 
+A finding that no change can fix warns until its PR lands. Its author accepts it with a footer,
+beside any `BREAKING CHANGE:` one: `Accepts: ACTION RULE [GLOB]: REASON`. RULE is a key that the
+action declares, and GLOB narrows the line to some files. The report lists the finding with the
+reason, and it warns no more. A line that names no rule, gives no reason or matches nothing is a
+finding.
+
 PR description, whose skeleton is [the template](pull_request_template.md) beside this file.
 GitHub offers it for a new pull request where a repository copies it to
 `.github/pull_request_template.md`. Filled in, a description reads:
@@ -276,9 +278,7 @@ git log --format=%s main..HEAD | awk 'length > 72'
 git rebase --exec '<build && test>' main
 ```
 
-Build-and-test examples: `go build ./... && go test ./...`,
-`dotnet build && dotnet test --no-build`. If the full suite is slow, run build plus affected tests
-per commit and the full suite on each PR's tip.
+If the suite is slow, run build plus affected tests per commit, and the full suite on each PR's tip.
 
 If `--exec` stops on a commit, fix that commit (`git commit --amend`), then `git rebase --continue`.
 If any size is over its limit or any header doesn't conform, fix it before reporting.

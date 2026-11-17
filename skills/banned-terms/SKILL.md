@@ -41,6 +41,13 @@ messages and pull requests.
 The list below holds in every repository. A repository adds no term of its own, and allows none
 of the list.
 
+A name that you cannot rename, such as an external tool's key, warns on its pull request. Its
+author accepts the finding with an `Accepts` footer of the description, as section 6 of the
+atomic-commits skill says. The rule is the first term of the term's group in
+[terms.json](terms.json), as `helper`, and the report gives it in the rule's section. So
+`Accepts: banned-terms helper src/git.sh: git's credential.helper key` accepts a `helper` in
+`src/git.sh`. The check reads no `Accepts` line of the description as text.
+
 ## The terms
 
 The terms are in [terms.json](terms.json), beside this file: an array of groups, each of its
