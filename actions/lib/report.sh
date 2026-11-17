@@ -33,7 +33,7 @@
 # - writes the report to $GITHUB_STEP_SUMMARY, as of that SHA or update. It opens with "This check
 #   warns and does not block the merge", or on an issue, where no merge waits, with "This check
 #   warns and blocks nothing". It then gives each rule with findings a section: its title, link,
-#   findings and fix;
+#   key, as an Accepts line names it, findings and fix;
 # - where COMMENT is true, keeps its one comment to the report, the one that
 #   <!-- zadykian/actions:NAME --> starts: it creates or edits it. A clean check edits it to say
 #   that no findings remain, and never creates one. Runs that race may each create one, so it
@@ -214,8 +214,8 @@ report_text() {
             at=${report_files[j]}${report_lines[j]:+:${report_lines[j]}}
             found+="- ${at:+\`$at\`: }${report_messages[j]//$'\n'/$'\n'  }"$'\n'
         done
-        [ -z "$found" ] || printf '\n#### %s\n\nThe rule: %s\n\n%s\nHow to fix it:\n\n%s\n' \
-            "${report_titles[i]}" "${report_urls[i]}" "$found" "${report_fixes[i]}"
+        [ -z "$found" ] || printf '\n#### %s\n\nThe rule: %s\nIts key: %s\n\n%s\nHow to fix it:\n\n%s\n' \
+            "${report_titles[i]}" "${report_urls[i]}" "\`${report_keys[i]}\`" "$found" "${report_fixes[i]}"
     done
     [ "${#accepted_messages[@]}" = 0 ] || report_accepted
 }

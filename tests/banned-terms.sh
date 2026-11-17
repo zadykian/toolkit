@@ -86,6 +86,7 @@ warnings 1
 summarizes "#### helper, helpers
 
 The rule: $skill
+Its key: \`0\`
 
 - The title says \`helper\`: \`feat: add a string helper and its helper test\`
 
@@ -102,16 +103,19 @@ start warns-on-each-group-of-the-skills-terms
 title="feat: $(cut -f1 <<<"$groups" | sed 's/,.*//' | paste -sd ' ' -)"
 titled "$title"
 check banned-terms
+n=0
 while IFS=$'\t' read -r terms hint; do
     summarizes "#### $terms
 
 The rule: $skill
+Its key: \`$n\`
 
 - The title says \`${terms%%,*}\`: \`$title\`
 
 How to fix it:
 
 $hint"
+    n=$((n + 1))
 done <<<"$groups"
 
 # A term is lowercased, and splits at each character other than a letter or a digit. A hint's

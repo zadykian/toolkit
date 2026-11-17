@@ -97,6 +97,7 @@ This check warns and does not block the merge. It found 2 findings as of \`01234
 summarizes "#### Rule A
 
 The rule: https://example.test/a
+Its key: \`a\`
 
 - \`src/x.go:12\`: The title says 100% done.
 - Two
