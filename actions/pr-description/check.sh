@@ -151,7 +151,8 @@ done
 rule breaking "The title's ! and the BREAKING CHANGE: footer do not match" "$url" "A breaking \
 change has both: \`!\` before the title's colon, as \`feat(scope)!: ...\`, and the footer, one of \
 the footers of the description's last paragraph. Only an attribution line, such as \`🤖 Generated \
-with [Claude Code](...)\`, may follow it. Where nothing breaks, drop both.
+with [Claude Code](...)\`, and paragraphs of a link alone after it may follow. Where nothing \
+breaks, drop both.
 
 $(template "$footer_md")"
 bang='^[[:alpha:]]+(\([^()]*\))?!:' token='^BREAKING[ -]CHANGE:[[:blank:]]+[^[:blank:]]'

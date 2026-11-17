@@ -170,6 +170,14 @@ warnings 0
 titled passes-a-footer-and-an-attribution 'feat!: drop it' "$problem$changes${footer/ /-}$by"
 warnings 0
 
+session=$'\n\nhttps://claude.ai/code/session_01Abc\n\n[Session](https://claude.ai/code/session_01Abc)'
+titled passes-a-session-link 'feat!: drop it' "$problem$changes$footer$by$session"
+warnings 0
+
+titled warns-on-text-after-an-attribution 'feat!: drop it' "$problem$changes$footer$by"$'\n\nThanks!'
+warns "has no \`BREAKING CHANGE:\` footer: it ends in \`Thanks!\`"
+warnings 1
+
 # The BREAKING CHANGE: footer may be any of the footers, as below another.
 refs=$'\n\nRefs: #1\nBREAKING CHANGE: the v1 inputs are gone.'
 titled passes-a-breaking-footer-below-another 'feat!: drop it' "$problem$changes$refs"
@@ -216,6 +224,14 @@ describe passes-200-words-and-an-attribution "$edge$changes$foot$by"
 warnings 0
 
 describe warns-on-201-words-and-footers "$edge"$' One.'"$changes$foot$by"
+warns "The description holds 201 words, outside code blocks, HTML comments, the title and the"
+warnings 1
+
+# A session link below the attribution line counts no word either, with no footer above the line.
+describe passes-200-words-and-a-session-link "$edge$changes$by$session"
+warnings 0
+
+describe warns-on-201-words-and-a-session-link "$edge"$' One.'"$changes$by$session"
 warns "The description holds 201 words, outside code blocks, HTML comments, the title and the"
 warnings 1
 

@@ -209,9 +209,9 @@ main ← feat/retry-1-gateway ← feat/retry-2-policy ← feat/retry-3-checkout
   then `git switch -C <branch> origin/<branch>` for each.
 
 PR titles use the Conventional Commits header format too. The commit that lands a PR carries its
-title: a merge commit in its body, a squash merge as its header. A PR with a breaking commit has
-`!` in its title and a `BREAKING CHANGE:` footer among its footers. Only an attribution line may
-follow them, one that starts `Generated with` or `🤖 Generated with`.
+title: a merge commit in its body, a squash merge as its header. A breaking PR has `!` in its title
+and a `BREAKING CHANGE:` footer. Only an attribution line may follow the footers, one
+that starts `Generated with` or `🤖 Generated with`, and after that line paragraphs of a link alone.
 
 PR description, whose skeleton is [the template](pull_request_template.md) beside this file.
 GitHub offers it for a new pull request where a repository copies it to

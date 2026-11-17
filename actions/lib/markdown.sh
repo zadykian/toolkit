@@ -48,12 +48,20 @@ trailers_of() {
 # or LAST < FIRST where it has none. Call it after markdown_read. As `trailers` reads a commit's,
 # the footers are the last paragraph, other than the first, where each line is `Token: value`,
 # where `BREAKING CHANGE` is a token, or continues the line before it. An attribution line, as
-# `🤖 Generated with [Claude Code](...)`, ends the description below them, and is no footer.
+# `🤖 Generated with [Claude Code](...)`, and the paragraphs of a link alone after it end the
+# description below them, and are no footer.
 footers() {
-    local last lines=() i first by='^(🤖 )?Generated with '
+    local last lines=() i first at
+    local by='^(🤖 )?Generated with '
+    local link='^[[:blank:]]*(<?https?://[^[:space:]]+>?|\[[^]]*\]\([^)]*\))[[:blank:]]*$'
     last=$(filled $((${#kinds[@]} - 1)))
-    if ((last >= 0)) && [[ ${texts[last]} =~ $by ]]; then
-        last=$(filled $((last - 1)))
+    # Below the attribution line may come paragraphs of a link alone, as Claude Code on the web adds.
+    at=$last
+    while ((at >= 0)) && [ "${kinds[at]}" = text ] && [[ ${texts[at]} =~ $link ]]; do
+        at=$(filled $((at - 1)))
+    done
+    if ((at >= 0)) && [[ ${texts[at]} =~ $by ]]; then
+        last=$(filled $((at - 1)))
     fi
     for ((i = 0; i <= last; i++)); do
         if [ "${kinds[i]}" = text ]; then lines+=("${texts[i]}"); else lines+=(''); fi

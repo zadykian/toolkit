@@ -22,8 +22,8 @@ BREAKING CHANGE: what changed, and what callers must do.
 ```
 
 `{NAME}` is the pull request's title, word for word. The `BREAKING CHANGE:` footer goes where
-the title has `!`. An attribution line, such as `🤖 Generated with [Claude Code](...)`, may end
-the description.
+the title has `!`. An attribution line, such as `🤖 Generated with [Claude Code](...)`, and
+paragraphs of a link alone after it, such as a session's, may end the description.
 
 ## Rules
 

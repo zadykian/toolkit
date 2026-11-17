@@ -74,3 +74,10 @@ markdown_read $'# T\n\nA.\n\n```\nRefs: #1\n```'
 same 'footers in a code block' "$(footers)" '7 6'
 markdown_read ''
 same 'footers of an empty text' "$(footers)" '0 -1'
+
+# A paragraph of a link alone after the attribution line is no footer either, but other text is.
+setup reads-the-footers-above-a-session-link
+markdown_read "$body"$'\n\n'"$by"$'\n\nhttps://claude.ai/code/session_01\n\n[Session](https://claude.ai/x)'
+same 'footers above a session link' "$(footers)" '6 8'
+markdown_read "$body"$'\n\n'"$by"$'\n\nSee https://claude.ai/code/session_01'
+same 'footers above a line with a link' "$(footers)" '13 12'
