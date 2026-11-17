@@ -223,3 +223,8 @@ agree "$(values .vale.ini '^([[:alpha:]-]+\.[[:alpha:]]+) = error$')" \
 
 setup links-to-headings-of-its-skill
 for script in "$ROOT"/actions/*/check.sh; do links "${script#"$ROOT"/}"; done
+
+# The footer's token, as the skill names it in `TOKEN: ACTION RULE` and accept.sh reads it.
+setup holds-the-token-of-an-accepting-footer
+agree "$(values actions/lib/accept.sh "== '([A-Za-z]+):'\\*")" \
+    "$(values "$skill_ac" '`([A-Za-z]+): ACTION RULE')"
