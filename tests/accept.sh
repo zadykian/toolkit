@@ -78,6 +78,32 @@ summarizes "\`Accepts: probe a docs/**: Nothing there.\` matches no finding."
 summarizes "#### An Accepts line accepts nothing"
 warnings 5
 
+# A GLOB line never matches a finding of no file. Two lines that accept one finding both stand,
+# and it is accepted once. A reason of blanks is no reason. The usual shape, a footer above an
+# attribution line, reads as well.
+setup keeps-a-finding-of-no-file-from-a-glob-line
+described $'# T\n\nAccepts: probe a **: Names of git.'
+probe <<<"finding a 'No file.'"
+summarizes "\`Accepts: probe a **: Names of git.\` matches no finding."
+warnings 2
+
+setup accepts-a-finding-once-for-two-lines
+described $'# T\n\nAccepts: probe a src/**: One.\nAccepts: probe a src/x.go: Two.'
+probe <<<"finding a 'In src.' src/x.go 3"
+warnings 0
+summarizes "Reason: One."
+
+setup finds-a-line-with-a-blank-reason
+described $'# T\n\nAccepts: probe a:   '
+probe <<<"finding a 'Found.'"
+summarizes "has no reason."
+warnings 2
+
+setup reads-a-footer-above-an-attribution-line
+described $'# T\n\nAccepts: probe a: Names of git.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)'
+probe <<<"finding a 'Found.'"
+warnings 0
+
 # GitHub keeps the \r\n that a browser sent, which an attribution line ends the footers after.
 setup reads-a-description-with-crlf-line-ends
 described $'# T\r\n\r\nAccepts: probe a: Names of git.\r\n\r\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\r\n'
