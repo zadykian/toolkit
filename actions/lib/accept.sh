@@ -16,9 +16,11 @@
 accepted_rules=() accepted_messages=() accepted_files=() accepted_lines=() accepted_reasons=()
 
 # report_accept moves each finding that a line of the footers of the description $1 accepts from
-# the findings to the accepted ones.
+# the findings to the accepted ones. A line of the action that names no rule, has no reason or
+# matches no finding is a finding of the rule accepts.
 report_accept() {
-    local first last i j line rest head reason action key glob gone=' ' keep=()
+    local first last i j line rest head reason action key glob gone=' ' keep=() bad=() used keys
+    printf -v keys "%s, " "${report_keys[@]-}"
     markdown_read "$1"
     read -r first last <<<"$(footers)"
     for ((i = first; i <= last; i++)); do
@@ -32,21 +34,42 @@ report_accept() {
         fi
         read -r action key glob <<<"$head"
         [ "$action" = "${report_name-}" ] || continue
+        if [ -z "$key" ] || [[ " ${report_keys[*]-} " != *" $key "* ]]; then
+            bad+=("$(quote "$line") names no rule of $report_name: ${keys%, }.")
+            continue
+        elif [ -z "${reason//[[:space:]]/}" ]; then
+            bad+=("$(quote "$line") has no reason.")
+            continue
+        fi
+        used=''
         for j in "${!report_messages[@]}"; do
             [ "${report_keys[${report_rules[j]}]-}" = "$key" ] || continue
             [ -z "$glob" ] || { [ -n "${report_files[j]}" ] &&
                 (EXCLUDE=$glob && excluded "${report_files[j]}"); } || continue
+            used=1
             [[ $gone != *" $j "* ]] || continue
             accepted_rules+=("${report_rules[j]}") accepted_messages+=("${report_messages[j]}")
             accepted_files+=("${report_files[j]}") accepted_lines+=("${report_lines[j]}")
             accepted_reasons+=("$reason")
             gone+="$j "
         done
+        [ -n "$used" ] || bad+=("$(quote "$line") matches no finding.")
     done
     for j in "${!report_messages[@]}"; do
         [[ $gone == *" $j "* ]] || keep+=("$j")
     done
     report_keep "${keep[@]}"
+    [ "${#bad[@]}" = 0 ] || report_accepts "${bad[@]}"
+}
+
+# report_accepts declares the rule accepts, and records its findings $@.
+report_accepts() {
+    local message
+    rule accepts 'An Accepts line accepts nothing' \
+        "$(file_url skills/atomic-commits/SKILL.md)#6-stack-mechanics-git--238" \
+        "Write \`Accepts: NAME RULE [GLOB]: REASON\`, with a rule of the check and a reason, or drop
+the line where no finding matches it."
+    for message; do finding accepts "$message"; done
 }
 
 # report_keep keeps the findings of the indices $@ alone.

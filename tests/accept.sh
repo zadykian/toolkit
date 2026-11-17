@@ -67,6 +67,17 @@ described $'# T\n\nAccepts: probe a: Names of git.\n\nMore text.'
 probe <<<"finding a 'Found.'"
 warnings 1
 
+# A line of its action that names no rule, has no reason or matches no finding is a finding.
+setup finds-a-bad-line
+described $'# T\n\nAccepts: probe c: Not a rule.\nAccepts: probe: No rule.\nAccepts: probe a:\nAccepts: probe a docs/**: Nothing there.\nAccepts: other c: Not ours.'
+probe <<<"finding a 'Found.' src/x.go"
+summarizes "\`Accepts: probe c: Not a rule.\` names no rule of probe: a, b."
+summarizes "\`Accepts: probe: No rule.\` names no rule of probe: a, b."
+summarizes "\`Accepts: probe a:\` has no reason."
+summarizes "\`Accepts: probe a docs/**: Nothing there.\` matches no finding."
+summarizes "#### An Accepts line accepts nothing"
+warnings 5
+
 # GitHub keeps the \r\n that a browser sent, which an attribution line ends the footers after.
 setup reads-a-description-with-crlf-line-ends
 described $'# T\r\n\r\nAccepts: probe a: Names of git.\r\n\r\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\r\n'
