@@ -46,6 +46,11 @@
 #   gh cannot list them, as where a private repository's job grants no checks: read, it leaves
 #   out none.
 #
+# On a pull request, report_finish first reads the footers of its description, and accept.sh moves
+# each finding that a line `Accepts: NAME RULE [GLOB]: REASON` matches to an "Accepted" section of
+# the report, with the reason, where it warns no more. A check whose findings are all accepted
+# creates no comment.
+#
 # A check.sh, for one rule:
 #
 #   #!/bin/bash
@@ -199,9 +204,9 @@ report_text() {
     printf '### %s\n\nThis check warns and %s. ' "$report_name" "$1"
     if [ "$count" = 0 ]; then
         printf 'No findings remain as of %s.\n' "$2"
-        return
+    else
+        printf 'It found %s as of %s.\n' "$(report_plural "$count" finding)" "$2"
     fi
-    printf 'It found %s as of %s.\n' "$(report_plural "$count" finding)" "$2"
     for i in "${!report_keys[@]}"; do
         found=''
         for j in "${!report_messages[@]}"; do
@@ -211,6 +216,18 @@ report_text() {
         done
         [ -z "$found" ] || printf '\n#### %s\n\nThe rule: %s\n\n%s\nHow to fix it:\n\n%s\n' \
             "${report_titles[i]}" "${report_urls[i]}" "$found" "${report_fixes[i]}"
+    done
+    [ "${#accepted_messages[@]}" = 0 ] || report_accepted
+}
+
+# report_accepted prints the accepted findings, each with the reason of the line that accepts it.
+report_accepted() {
+    local j at
+    printf '\n#### Accepted\n\nThe description accepts these findings, and each warns no more:\n\n'
+    for j in "${!accepted_messages[@]}"; do
+        at=${accepted_files[j]}${accepted_lines[j]:+:${accepted_lines[j]}}
+        printf '%s\n' "- ${at:+\`$at\`: }${accepted_messages[j]//$'\n'/$'\n'  }" \
+            "  Reason: ${accepted_reasons[j]}"
     done
 }
 

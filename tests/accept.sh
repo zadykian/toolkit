@@ -33,6 +33,23 @@ CHECK
 warns "::Elsewhere.%0AThe rule: https://example.test/a"
 warns "::Of Rule B."
 warnings 2
+summarizes "It found 2 findings as of"
+summarizes "#### Accepted
+
+The description accepts these findings, and each warns no more:
+
+- \`src/x.go:12\`: In src.
+  Reason: A name of git."
+
+setup accepts-a-rule-of-all-files
+described $'# T\n\nAccepts: probe a: Names of git.'
+probe <<'CHECK'
+finding a 'One.' src/x.go
+finding a 'Two.'
+CHECK
+warnings 0
+summarizes "No findings remain as of"
+summarizes "Reason: Names of git."
 
 # GitHub keeps the \r\n that a browser sent, which an attribution line ends the footers after.
 setup reads-a-description-with-crlf-line-ends
