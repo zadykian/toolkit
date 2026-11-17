@@ -41,15 +41,6 @@ changed() {
         '{filename: $path, status: $status, changes: 1, patch: $patch}'
 }
 
-# listed leaves a tree of the action in $FAKE whose skill's terms.json holds the text $1, or which
-# has no terms.json where $1 is omitted. Pass "$tree" to check, which then runs on that tree.
-listed() {
-    mkdir -p "$FAKE/actions/banned-terms" "$FAKE/skills/banned-terms"
-    ln -s "$ROOT/actions/lib" "$FAKE/actions/lib"
-    [ $# = 0 ] || printf '%s\n' "$1" >"$FAKE/skills/banned-terms/terms.json"
-    tree=GITHUB_ACTION_PATH=$FAKE/actions/banned-terms
-}
-
 # matches checks that the title $1 gives a finding of each term after it, and no other.
 matches() {
     local term
@@ -73,16 +64,25 @@ matches 'cp /etc/hosts "/usr/share/misc" PATH=/opt/misc:/etc/utils'
 matches 'Read /etc/hosts, etc.' etc
 matches 'run \thelper = and \nmisc' helper misc
 matches '\rmisc' misc
-matches "\${ws}/etc" etc
-matches "\"\$ws/root\"/etc" etc
-matches "'\$ws'/etc" etc
+matches "\${ws}/misc" misc
+matches "\"\$ws/root\"/misc" misc
+matches "'\$ws'/misc" misc
 start matches-a-command-substitution-then-a-path
-titled "run \`pwd\`/etc"
+titled "run \`pwd\`/misc"
 check banned-terms
-warns "::The title says \`etc\`"
+warns "::The title says \`misc\`"
 warnings 1
 matches "cp '/etc/misc' \`/usr/misc\`"
-matches 'cp ./etc/x ~/misc https://example.test/utils' etc misc utils
+matches 'cp ./stuff/x ~/misc https://example.test/utils' stuff misc utils
+# The list's well-known names hold a term, and give no finding.
+matches 't.Helper() and s.T().Helper(), for credential.https://x.test.helper'
+matches $'git config --get-regexp \'^credential\\..*helper$\', the credential helpers'
+matches '\thelper = \n\thelper = !gh auth git-credential, and helper ='
+matches "cp \$ws/root/etc/hosts \"\$ws\"/etc in etc/netplan, TZ=Etc/UTC"
+matches 'x.Helper()' helper
+matches 'helper = x' helper
+matches credentials_helper helper
+matches 'Add docs/etc.' etc
 
 # A description accepts a finding with a footer, which quotes the term it accepts, and so makes no
 # finding of its own.
@@ -136,58 +136,6 @@ How to fix it:
 
 $hint"
 done <<<"$groups"
-
-# An escape reads both ways: as a space, and as the letters of a word, as in a Windows path.
-start reads-a-word-after-an-escape-both-ways
-listed '[{"terms": ["things", "thing"], "hint": "Say it"}]'
-titled 'feat: C:\things and \thing'
-check banned-terms "$tree"
-warns "::The title says \`things\`"
-warns "::The title says \`thing\`"
-warnings 2
-
-# A term is lowercased, and splits at each character other than a letter or a digit. A hint's
-# line ends become spaces.
-start splits-each-term-of-the-list
-listed '[{"terms": ["foo", "Bar-baz"], "hint": "Say it"}, {"terms": ["QUX"], "hint": "Drop\nit"}]'
-titled 'feat: foo baz qux quux'
-check banned-terms "$tree"
-warns "::warning title=banned-terms%3A foo%2C bar%2C baz::The title says \`foo\`"
-warns "::warning title=banned-terms%3A foo%2C bar%2C baz::The title says \`baz\`"
-warns "::warning title=banned-terms%3A qux::The title says \`qux\`"
-warnings 3
-summarizes $'How to fix it:\n\nSay it'
-summarizes $'How to fix it:\n\nDrop it'
-
-start warns-without-the-list
-listed
-check banned-terms "$tree"
-warns '::warning::banned-terms could not check #1: skills/banned-terms/terms.json, which lists'
-warnings 1
-
-start warns-where-the-list-is-no-json
-listed '[{"terms": ["foo"], "hint": "Say it"}'
-check banned-terms "$tree"
-warns '::warning::banned-terms could not check #1: skills/banned-terms/terms.json is not valid JSON'
-warnings 1
-
-# Each of these is no array of groups: no value, two, no array, a group of no object, terms of no
-# array, no term, a term with no letter or digit, no hint, and a blank one.
-for json in '' '[] []' '{}' '["foo"]' '[{"terms": "foo", "hint": "Say it"}]' \
-    '[{"terms": [], "hint": "Say it"}]' '[{"terms": ["--"], "hint": "Say it"}]' \
-    '[{"terms": ["foo"]}]' '[{"terms": ["foo"], "hint": " "}]'; do
-    start "warns-where-the-list-is-malformed: $json"
-    listed "$json"
-    check banned-terms "$tree"
-    warns '::warning::banned-terms could not check #1: skills/banned-terms/terms.json holds no'
-    warnings 1
-done
-
-start warns-where-the-list-is-empty
-listed '[]'
-check banned-terms "$tree"
-warns '::warning::banned-terms could not check #1: skills/banned-terms/terms.json lists no term.'
-warnings 1
 
 start quotes-a-backtick
 titled $'fix: drop  the `utils`\tmodule'

@@ -38,15 +38,15 @@ messages and pull requests.
 
 ## The repository's rules
 
-The list below holds in every repository. A repository adds no term of its own, and allows none
-of the list.
+The list below holds in every repository, and so do its well-known names. A repository adds no
+term or name of its own, and allows no term of the list.
 
-A name that you cannot rename, such as an external tool's key, warns on its pull request. Its
-author accepts the finding with an `Accepts` footer of the description, as section 6 of the
-atomic-commits skill says. The rule is the first term of the term's group in
-[terms.json](terms.json), as `helper`, and the report gives it in the rule's section. So
-`Accepts: banned-terms helper src/git.sh: git's credential.helper key` accepts a `helper` in
-`src/git.sh`. The check reads no `Accepts` line of the description as text.
+A name that you cannot rename and the list does not know, such as a package's, warns on its pull
+request. Its author accepts the finding with an `Accepts` footer of the description, as section 6
+of the atomic-commits skill says. The rule is the first term of the term's group in
+[terms.json](terms.json), as `util`, and the report gives it in the rule's section. So
+`Accepts: banned-terms util packages.txt: Debian's xz-utils package` accepts a `utils` in
+`packages.txt`. The check reads no `Accepts` line of the description as text.
 
 ## The terms
 
@@ -58,16 +58,29 @@ prose. [The action](#the-action) reads the same file.
 
 A term matches a whole word, in any case. A text splits into words at each character other than a
 letter or a digit, and again at each hump of camelCase and PascalCase. So `HTTPHelper` gives
-`http` and `helper`. A `\n`, `\r` or `\t` reads as a space too, so `\thelper` gives `helper` and `thelper`.
+`http` and `helper`. A `\n`, `\r` or `\t` reads as a space too, so `\thelper` gives `helper` and
+`thelper`.
 
 A path from the root names the system's files, not yours, so no term matches in it. It starts at
 a `/` with no letter, digit, `.`, `_`, `-`, `~`, `/` or `}` before it, nor a quote that closes a
-word. So `${ws}/etc` and `"$ws/root"/etc` read as `$ws/root/etc` does.
+word. So `${ws}/misc` and `"$ws/root"/misc` read as `$ws/root/misc` does.
+
+A well-known name that holds a term matches none either. A group's `except` in terms.json lists
+them as regexes, and the action drops their matches before it reads the words:
+
+- Go's `t.Helper()`, and that of `b`, `f`, `tb` and `s.T()`.
+- Git's credential helper: `credential.helper`, a URL's `credential.https://example.com.helper`,
+  the words "credential helper", and a gitconfig's `helper =` line, with no value or a `!` command.
+- A directory `etc/`, a path that ends in `/etc`, and a time zone of `Etc/`, as `Etc/UTC`.
+
+So:
 
 - `StringHelper`, `str_utils.py` and `MiscStuff` match.
 - `utilize`, `helpful` and `etcd` don't, as none of their words is a term.
-- `/etc/hosts` and `/usr/share/misc` don't, as each is a path from the root. `./etc` and `~/misc`
+- `/etc/hosts` and `/usr/share/misc` don't, as each is a path from the root. `./misc` and `~/misc`
   match.
+- `t.Helper()`, `cd "$ws"/etc` and `TZ=Etc/UTC` don't, as each is a well-known name.
+  `x.Helper()` and `docs/etc.` match.
 
 ## What to write instead
 

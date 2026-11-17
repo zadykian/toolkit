@@ -45,4 +45,5 @@ jobs:
             docs/lint.md
             skills/banned-terms/SKILL.md
             skills/banned-terms/terms.json
+            tests/banned-terms-list.sh
             tests/banned-terms.sh
