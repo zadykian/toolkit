@@ -50,3 +50,34 @@ long=$(printf 'a%.0s' $(seq 61))
 same "quote ' x '" "$(quote ' x ')" '`x`'
 same 'quote of a backtick' "$(quote 'a `b`')" '`` a `b` ``'
 same 'quote of 61 characters' "$(quote "$long")" "\`${long:0:59}…\`"
+
+# trailers prints the index of the first trailer of a commit message's lines, or their count.
+setup reads-the-trailers-of-a-message
+same 'trailers of a body' "$(trailers 'feat: x' '' 'Why: y' '' 'Fixes: #1' ' more' 'Co-Authored-By: A')" 4
+same 'trailers of a paragraph' "$(trailers 'feat: x' '' 'Text' 'Fixes: #1')" 4
+same 'trailers of a header' "$(trailers 'feat: x' 'Fixes: #1')" 2
+same 'trailers, as git reads them' "$(trailers 'feat: x' '' 'BREAKING CHANGE: y' 'Refs: #1')" 4
+
+# footers prints the first and last lines of the footers, above an attribution line.
+setup reads-the-footers-of-a-description
+by='🤖 Generated with [Claude Code](https://claude.com/claude-code)'
+body=$'# T\n\n## Problem\n\nA.\n\nBREAKING CHANGE: x,\n  and y.\nRefs: #1'
+markdown_read "$body"
+same 'footers' "$(footers)" '6 8'
+markdown_read "$body"$'\n\n'"$by"$'\n'
+same 'footers above an attribution' "$(footers)" '6 8'
+markdown_read $'# T\n\nA.\n\nText\nRefs: #1'
+same 'footers of a paragraph' "$(footers)" '6 5'
+markdown_read $'# T\n\nRefs: #1'
+same 'footers right after the title' "$(footers)" '2 2'
+markdown_read $'# T\n\nA.\n\n```\nRefs: #1\n```'
+same 'footers in a code block' "$(footers)" '7 6'
+markdown_read ''
+same 'footers of an empty text' "$(footers)" '0 -1'
+
+# A paragraph of a link alone after the attribution line is no footer either, but other text is.
+setup reads-the-footers-above-a-session-link
+markdown_read "$body"$'\n\n'"$by"$'\n\nhttps://claude.ai/code/session_01\n\n[Session](https://claude.ai/x)'
+same 'footers above a session link' "$(footers)" '6 8'
+markdown_read "$body"$'\n\n'"$by"$'\n\nSee https://claude.ai/code/session_01'
+same 'footers above a line with a link' "$(footers)" '13 12'

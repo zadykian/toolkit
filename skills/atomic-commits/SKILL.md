@@ -126,10 +126,6 @@ BREAKING CHANGE: ChargeClient is removed; call PaymentGateway.Charge
 instead.
 ```
 
-```text
-fix(checkout): stop double-charging on retried requests
-```
-
 A commit whose header starts `fixup!`, `squash!` or `amend!` is temporary and doesn't conform:
 autosquash it before pushing or reporting.
 
@@ -209,9 +205,15 @@ main ← feat/retry-1-gateway ← feat/retry-2-policy ← feat/retry-3-checkout
   then `git switch -C <branch> origin/<branch>` for each.
 
 PR titles use the Conventional Commits header format too. The commit that lands a PR carries its
-title: a merge commit in its body, a squash merge as its header. A PR with a breaking commit has
-`!` in its title and the `BREAKING CHANGE:` footer at the end of its description. Only an
-attribution line may follow it, one that starts `Generated with` or `🤖 Generated with`.
+title: a merge commit in its body, a squash merge as its header. A breaking PR has `!` in its title
+and a `BREAKING CHANGE:` footer. Only an attribution line may follow the footers, one
+that starts `Generated with` or `🤖 Generated with`, and after that line paragraphs of a link alone.
+
+A finding that no change can fix warns until its PR lands. Its author accepts it with a footer,
+beside any `BREAKING CHANGE:` one: `Accepts: ACTION RULE [GLOB]: REASON`. RULE is a key that the
+action declares, and GLOB narrows the line to some files. The report lists the finding with the
+reason, and it warns no more. A line that names no rule, gives no reason or matches nothing is a
+finding.
 
 PR description, whose skeleton is [the template](pull_request_template.md) beside this file.
 GitHub offers it for a new pull request where a repository copies it to
@@ -236,8 +238,8 @@ BREAKING CHANGE: what changed, and what callers must do.
 - `## Problem` follows it: one to three sentences, and the issue it closes, if any.
 - `## Changes` holds bullets by behavior, not by file.
 - No other sections or headings, at any level. GitHub shows a PR's place in its stack, so the
-  description doesn't. 200 words at most, not counting code blocks and HTML comments, but counting
-  the title.
+  description doesn't. 200 words at most, not counting code blocks, HTML comments, the title,
+  the footers (the last paragraph of `Token: value` lines) or the attribution line.
 
 ## 7. Verify
 
@@ -276,9 +278,7 @@ git log --format=%s main..HEAD | awk 'length > 72'
 git rebase --exec '<build && test>' main
 ```
 
-Build-and-test examples: `go build ./... && go test ./...`,
-`dotnet build && dotnet test --no-build`. If the full suite is slow, run build plus affected tests
-per commit and the full suite on each PR's tip.
+If the suite is slow, run build plus affected tests per commit, and the full suite on each PR's tip.
 
 If `--exec` stops on a commit, fix that commit (`git commit --amend`), then `git rebase --continue`.
 If any size is over its limit or any header doesn't conform, fix it before reporting.

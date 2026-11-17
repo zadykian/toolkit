@@ -94,6 +94,12 @@ The pull request's title, as [section 6][s6] sets it:
 GitHub lists the first 250 commits of a pull request alone. Past them, the `commit-count` finding
 says how many commits the check skipped.
 
+## Accepting a finding
+
+A footer of the description, `Accepts: atomic-commits RULE [GLOB]: REASON`, accepts the
+findings of RULE, a key such as `pr-size` or `header`. The report lists each with the reason, and it
+warns no more. See [the skill](../../skills/atomic-commits/SKILL.md#6-stack-mechanics-git--238).
+
 ## Inputs
 
 - `token`, `${{ github.token }}` by default: reads the pull request, and comments on it.

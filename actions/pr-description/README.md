@@ -22,8 +22,8 @@ BREAKING CHANGE: what changed, and what callers must do.
 ```
 
 `{NAME}` is the pull request's title, word for word. The `BREAKING CHANGE:` footer goes where
-the title has `!`. An attribution line, such as `🤖 Generated with [Claude Code](...)`, may end
-the description.
+the title has `!`. An attribution line, such as `🤖 Generated with [Claude Code](...)`, and
+paragraphs of a link alone after it, such as a session's, may end the description.
 
 ## Rules
 
@@ -39,11 +39,17 @@ HTML comment or a code block is no prose: a template's comments, left alone, are
 | `problem` | `## Problem` is missing, has text or a heading other than the title's before it, or holds no prose |
 | `changes` | `## Changes` is missing, comes before Problem, or holds no bullet |
 | `sections` | A heading other than the title's and the two, or one out of order or repeated |
-| `breaking` | The title has `!`, but no `BREAKING CHANGE:` footer ends the body; or vice versa |
-| `length` | The description holds over 200 words, outside code blocks and HTML comments |
+| `breaking` | The title has `!`, but no `BREAKING CHANGE:` footer is among the footers; or vice versa |
+| `length` | The description holds over 200 words, outside code blocks, HTML comments, the title, the footers and the attribution line |
 
 A word is a run of characters between spaces, other than punctuation alone, such as a bullet's
 `-`.
+
+## Accepting a finding
+
+A footer of the description, `Accepts: pr-description RULE [GLOB]: REASON`, accepts the
+findings of RULE, a key such as `length`. The report lists each with the reason, and it
+warns no more. See [the skill](../../skills/atomic-commits/SKILL.md#6-stack-mechanics-git--238).
 
 ## Inputs
 

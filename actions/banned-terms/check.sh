@@ -19,8 +19,8 @@ skill=$(file_url skills/banned-terms/SKILL.md)
 # one array of groups, each {"terms": [TERM...], "hint": HINT}, as group checks: a TERM at least,
 # each with a letter or a digit, and a HINT that is not blank. A term splits at each character
 # other than a letter or a digit. config holds on its first line the index, {TERM: KEY}, then each
-# group's rule, its KEY, TITLE and HINT, whose line ends become spaces. A group's key is its
-# number. config is empty where the file holds no such array.
+# group's rule, its KEY, TITLE and HINT, whose line ends become spaces. A group's key is its first
+# term, which an Accepts line names. config is empty where the file holds no such array.
 list=skills/banned-terms/terms.json
 json=$GITHUB_ACTION_PATH/../../$list
 [ -f "$json" ] || cannot_check "$list, which lists the terms, is missing."
@@ -30,10 +30,9 @@ config=$(jq -sr 'def group: type == "object" and (.hint | type == "string" and t
             and all(.[]; type == "string" and test("[A-Za-z0-9]")));
     select(length == 1 and (.[0] | type == "array" and all(.[]; group))) | .[0]
     | map({terms: [.terms[] | ascii_downcase | splits("[^a-z0-9]+") | select(. != "")],
-        hint: (.hint | gsub("\n"; " "))})
-    | (reduce to_entries[] as $group ({}; .[$group.value.terms[]] = "\($group.key)")) as $index
-    | ($index | tojson), (to_entries[] | ["\(.key)", (.value.terms | join(", ")), .value.hint]
-        | join("\t"))' "$json")
+        hint: (.hint | gsub("\n"; " "))} | .key = .terms[0])
+    | (reduce .[] as $group ({}; .[$group.terms[]] = $group.key)) as $index
+    | ($index | tojson), (.[] | [.key, (.terms | join(", ")), .hint] | join("\t"))' "$json")
 [ -n "$config" ] || cannot_check "$list holds no array of groups, each of its terms and a hint."
 {
     read -r index
@@ -47,16 +46,20 @@ with \`exclude\`."
 
 # The jq functions of a scan. terms gives each term of $index that the text . holds, once: its
 # tokens split at each character other than a letter or a digit, then at each hump of camelCase,
-# as getHTTPResponse gives get, http and response. It drops each path from the root first, as
-# /etc/hosts, whose names are the system's: a / that no letter, digit, ., _, -, ~ or / precedes,
-# and the letters, digits, ., _, - and / after it. A test of the text first skips most lines.
+# as getHTTPResponse gives get, http and response. It reads \n, \r and \t as a space too, so
+# \tname gives name and tname. It drops each path from the root, as /etc/hosts, whose names
+# are the system's: a / that no letter, digit, ., _, -, ~, / or } precedes, nor a quote that
+# closes a word, and the letters, digits, ., _, - and / after it. A test of the text first skips
+# most lines.
 # find gives a finding of each, a line of KEY, MESSAGE, FILE and LINE, separated by tabs. file,
 # pull and commit find those of a file, a pull request and a commit, line by line. file reads the
 # path of a file added or renamed, and numbers each line of the new side from its hunk's header,
-# @@ -OLD +NEW @@, to read the lines added. A file that changes with no patch takes a note.
+# @@ -OLD +NEW @@, to read the lines added. A file that changes with no patch takes a note. pull
+# skips the description's `Accepts:` lines, which quote the term that they accept.
 defs='($index | keys | join("|")) as $any
 | def terms: select(test($any; "i"))
-    | gsub("(?<![A-Za-z0-9._~/-])/[A-Za-z0-9._-]+(/[A-Za-z0-9._-]*)*"; " ")
+    | gsub("\\\\(?<c>[nrt])(?<w>[A-Za-z0-9]*)"; " \(.c)\(.w) \(.w)")
+    | gsub("(?<![A-Za-z0-9._~/}-])(?<![A-Za-z0-9._~/}-][\"'"'"'`])/[A-Za-z0-9._-]+(/[A-Za-z0-9._-]*)*"; " ")
     | gsub("(?<a>[a-z0-9])(?<b>[A-Z])"; "\(.a) \(.b)")
     | gsub("(?<a>[A-Z])(?=[A-Z][a-z])"; "\(.a) ")
     | [ascii_downcase | splits("[^a-z0-9]+") | select($index[.])] | unique[];
@@ -83,7 +86,7 @@ defs='($index | keys | join("|")) as $any
     | select(.text) | .line as $line | .text | find("The added line"; $path; $line));
   def pull: (.title | find("The title"; ""; "")),
     ((.body // "" | split("\n") | to_entries[]) as {key: $i, value: $text}
-        | $text | find("Line \($i + 1) of the description"; ""; ""));
+        | $text | select(test("^Accepts:") | not) | find("Line \($i + 1) of the description"; ""; ""));
   def commit: .sha[:7] as $sha | (.commit.message | split("\n")) as $lines
     | range($lines | length) as $i | $lines[$i]
     | find(if $i == 0 then "The subject of commit `\($sha)`"

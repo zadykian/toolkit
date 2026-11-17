@@ -41,6 +41,13 @@ messages and pull requests.
 The list below holds in every repository. A repository adds no term of its own, and allows none
 of the list.
 
+A name that you cannot rename, such as an external tool's key, warns on its pull request. Its
+author accepts the finding with an `Accepts` footer of the description, as section 6 of the
+atomic-commits skill says. The rule is the first term of the term's group in
+[terms.json](terms.json), as `helper`, and the report gives it in the rule's section. So
+`Accepts: banned-terms helper src/git.sh: git's credential.helper key` accepts a `helper` in
+`src/git.sh`. The check reads no `Accepts` line of the description as text.
+
 ## The terms
 
 The terms are in [terms.json](terms.json), beside this file: an array of groups, each of its
@@ -51,10 +58,11 @@ prose. [The action](#the-action) reads the same file.
 
 A term matches a whole word, in any case. A text splits into words at each character other than a
 letter or a digit, and again at each hump of camelCase and PascalCase. So `HTTPHelper` gives
-`http` and `helper`.
+`http` and `helper`. A `\n`, `\r` or `\t` reads as a space too, so `\thelper` gives `helper` and `thelper`.
 
 A path from the root names the system's files, not yours, so no term matches in it. It starts at
-a `/` with no letter, digit, `.`, `_`, `-`, `~` or `/` before it.
+a `/` with no letter, digit, `.`, `_`, `-`, `~`, `/` or `}` before it, nor a quote that closes a
+word. So `${ws}/etc` and `"$ws/root"/etc` read as `$ws/root/etc` does.
 
 - `StringHelper`, `str_utils.py` and `MiscStuff` match.
 - `utilize`, `helpful` and `etcd` don't, as none of their words is a term.

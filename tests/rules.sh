@@ -181,7 +181,7 @@ EOF
 
 # The check's pattern of an attribution line, (MARK )?TEXT, as TEXT or MARK TEXT, the skill's forms.
 setup holds-the-line-that-may-follow-a-footer
-agree "$(values "$check_pd" " by='\^(\(.+ \)\?[^']*[^' ]) '\$" |
+agree "$(values actions/lib/markdown.sh " by='\^(\(.+ \)\?[^']*[^' ]) '\$" |
     sed -E 's/\t\((.+) \)\?(.+)$/\t\2 or \1 \2/')" \
     "$(values "$skill_ac" 'that starts (`[^`]+` or `[^`]+`)' | tr -d '`')"
 
@@ -223,3 +223,8 @@ agree "$(values .vale.ini '^([[:alpha:]-]+\.[[:alpha:]]+) = error$')" \
 
 setup links-to-headings-of-its-skill
 for script in "$ROOT"/actions/*/check.sh; do links "${script#"$ROOT"/}"; done
+
+# The footer's token, as the skill names it in `TOKEN: ACTION RULE` and accept.sh reads it.
+setup holds-the-token-of-an-accepting-footer
+agree "$(values actions/lib/accept.sh "== '([A-Za-z]+):'\\*")" \
+    "$(values "$skill_ac" '`([A-Za-z]+): ACTION RULE')"

@@ -10,6 +10,8 @@ export LC_ALL=C.UTF-8
 . "$GITHUB_ACTION_PATH/../lib/report.sh"
 # shellcheck source=actions/lib/glob.sh
 . "$GITHUB_ACTION_PATH/../lib/glob.sh"
+# shellcheck source=actions/lib/markdown.sh
+. "$GITHUB_ACTION_PATH/../lib/markdown.sh"
 
 # changed prints the lines changed in the files that the gh api path $1 lists, as the jq filter $2
 # gives them, out of the files that EXCLUDE matches.
@@ -36,22 +38,6 @@ header() {
     if [[ $description == *. ]]; then
         finding "${3:-description}" "$1: the description \`$description\` ends with a period."
     fi
-}
-
-# trailers prints the index of the first trailer among the message lines $@, or $# where they end
-# in none. As git reads them, the trailers are the last paragraph, other than the header's, where
-# each line is `Token: value` or continues the line before it.
-trailers() {
-    local lines=("$@") start=$# i
-    while [ "$start" -gt 2 ] && [ -n "${lines[start - 1]//[[:space:]]/}" ]; do
-        start=$((start - 1))
-    done
-    { [ "$start" -gt 1 ] && [ -z "${lines[start - 1]//[[:space:]]/}" ]; } || start=$#
-    for ((i = start; i < $#; i++)); do
-        [[ ${lines[i]} =~ ^[[:alnum:]-]+[[:blank:]]*: ]] ||
-            { [ "$i" -gt "$start" ] && [[ ${lines[i]} =~ ^[[:blank:]] ]]; } || start=$#
-    done
-    echo "$start"
 }
 
 # message records the findings of the body and the footers of the commit $1, whose message has

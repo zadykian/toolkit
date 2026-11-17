@@ -170,28 +170,77 @@ warnings 0
 titled passes-a-footer-and-an-attribution 'feat!: drop it' "$problem$changes${footer/ /-}$by"
 warnings 0
 
+session=$'\n\nhttps://claude.ai/code/session_01Abc\n\n[Session](https://claude.ai/code/session_01Abc)'
+titled passes-a-session-link 'feat!: drop it' "$problem$changes$footer$by$session"
+warnings 0
+
+titled warns-on-text-after-an-attribution 'feat!: drop it' "$problem$changes$footer$by"$'\n\nThanks!'
+warns "has no \`BREAKING CHANGE:\` footer: it ends in \`Thanks!\`"
+warnings 1
+
+# The BREAKING CHANGE: footer may be any of the footers, as below another.
+refs=$'\n\nRefs: #1\nBREAKING CHANGE: the v1 inputs are gone.'
+titled passes-a-breaking-footer-below-another 'feat!: drop it' "$problem$changes$refs"
+warnings 0
+
+titled warns-on-a-breaking-footer-below-another-and-no-bang 'feat: drop it' \
+    "$problem$changes$refs"
+warns "The description has a \`BREAKING CHANGE:\` footer, line 12, but the title"
+warnings 1
+
 titled passes-an-attribution 'fix: keep it!' "$problem$changes$by<!-- end -->"
 warnings 0
 
 titled warns-on-a-bang-without-a-footer 'feat(api)!: drop the v1 inputs' "$problem$changes"
-warns "The title \`feat(api)!: drop the v1 inputs\` has \`!\`, but the description does not end in"
-warns "a \`BREAKING CHANGE:\` footer: it ends in \`- Add it.\`"
+warns "The title \`feat(api)!: drop the v1 inputs\` has \`!\`, but the description has no"
+warns "\`BREAKING CHANGE:\` footer: it ends in \`- Add it.\`"
 warnings 1
 
 titled warns-on-text-after-the-footer 'feat!: drop it' "$problem$changes$footer"$'\n\nThanks!'
-warns "does not end in a \`BREAKING CHANGE:\` footer: it ends in \`Thanks!\`"
+warns "has no \`BREAKING CHANGE:\` footer: it ends in \`Thanks!\`"
 warnings 1
 
 describe warns-on-a-footer-without-a-bang "$clean$footer"
 warns "The description has a \`BREAKING CHANGE:\` footer, line 11, but the title"
 warnings 1
 
-# The title's heading holds 4 words, the rest of $edge and $changes 8, and $pad the other 188.
-pad=$(printf ' word%.0s' $(seq 188))
+# The rest of $edge and $changes hold 8 words, and $pad the other 192. The title's 4 count none.
+pad=$(printf ' word%.0s' $(seq 192))
 edge=$head$problem$pad$'\n\n```\nnone of these count\n```\n<!-- nor -->'
 describe passes-200-words "$edge$changes"
 warnings 0
 
 describe warns-on-201-words "$edge"$' One.'"$changes"
-warns "The description holds 201 words, outside code blocks and HTML comments: 1 over 200."
+warns "The description holds 201 words, outside code blocks, HTML comments, the title and the"
+warns "footers: 1 over 200."
 warnings 1
+
+# The footers and the attribution line, which hold words too, count none either.
+foot=$'\n\nRefs: #2, which the notes say,\n  and #3.\nSee-Also: the v1 inputs'
+describe passes-200-words-and-footers "$edge$changes$foot"
+warnings 0
+
+describe passes-200-words-and-an-attribution "$edge$changes$foot$by"
+warnings 0
+
+describe warns-on-201-words-and-footers "$edge"$' One.'"$changes$foot$by"
+warns "The description holds 201 words, outside code blocks, HTML comments, the title and the"
+warnings 1
+
+# A session link below the attribution line counts no word either, with no footer above the line.
+describe passes-200-words-and-a-session-link "$edge$changes$by$session"
+warnings 0
+
+describe warns-on-201-words-and-a-session-link "$edge"$' One.'"$changes$by$session"
+warns "The description holds 201 words, outside code blocks, HTML comments, the title and the"
+warnings 1
+
+# Prose above a level-1 heading that is no title counts, as the title's heading alone does not.
+prose=$(printf 'word %.0s' $(seq 250))
+describe warns-on-prose-above-a-level-1-heading "$prose"$'\n\n# feat: x\n\n'"$problem$changes"
+warns "The description holds 260 words, outside code blocks"
+
+# An Accepts footer stands beside the BREAKING CHANGE: footer.
+titled passes-a-breaking-change-and-an-accepts 'feat!: drop it' \
+    "$problem$changes"$'\n\nAccepts: atomic-commits pr-size: A rename.\nBREAKING CHANGE: it is gone.'
+warnings 0

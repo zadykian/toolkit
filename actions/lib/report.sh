@@ -33,7 +33,7 @@
 # - writes the report to $GITHUB_STEP_SUMMARY, as of that SHA or update. It opens with "This check
 #   warns and does not block the merge", or on an issue, where no merge waits, with "This check
 #   warns and blocks nothing". It then gives each rule with findings a section: its title, link,
-#   findings and fix;
+#   key, as an Accepts line names it, findings and fix;
 # - where COMMENT is true, keeps its one comment to the report, the one that
 #   <!-- zadykian/actions:NAME --> starts: it creates or edits it. A clean check edits it to say
 #   that no findings remain, and never creates one. Runs that race may each create one, so it
@@ -45,6 +45,11 @@
 #   every run on the head: of an edit to the title, and of a run that a newer one cancelled. Where
 #   gh cannot list them, as where a private repository's job grants no checks: read, it leaves
 #   out none.
+#
+# On a pull request, report_finish first reads the footers of its description, and accept.sh moves
+# each finding that a line `Accepts: NAME RULE [GLOB]: REASON` matches to an "Accepted" section of
+# the report, with the reason, where it warns no more. A check whose findings are all accepted
+# creates no comment.
 #
 # A check.sh, for one rule:
 #
@@ -59,6 +64,9 @@
 #   body=$(gh api "repos/$GH_REPO/pulls/$PR" --jq .body)
 #   [ -n "${body//[[:space:]]/}" ] || finding empty "The description of #$PR is empty."
 #   report_finish
+
+# shellcheck source=actions/lib/accept.sh
+. "$(dirname "${BASH_SOURCE[0]}")/accept.sh"
 
 # The rules by index: their keys, titles, links and fixes.
 report_keys=() report_titles=() report_urls=() report_fixes=()
@@ -196,9 +204,9 @@ report_text() {
     printf '### %s\n\nThis check warns and %s. ' "$report_name" "$1"
     if [ "$count" = 0 ]; then
         printf 'No findings remain as of %s.\n' "$2"
-        return
+    else
+        printf 'It found %s as of %s.\n' "$(report_plural "$count" finding)" "$2"
     fi
-    printf 'It found %s as of %s.\n' "$(report_plural "$count" finding)" "$2"
     for i in "${!report_keys[@]}"; do
         found=''
         for j in "${!report_messages[@]}"; do
@@ -206,8 +214,20 @@ report_text() {
             at=${report_files[j]}${report_lines[j]:+:${report_lines[j]}}
             found+="- ${at:+\`$at\`: }${report_messages[j]//$'\n'/$'\n'  }"$'\n'
         done
-        [ -z "$found" ] || printf '\n#### %s\n\nThe rule: %s\n\n%s\nHow to fix it:\n\n%s\n' \
-            "${report_titles[i]}" "${report_urls[i]}" "$found" "${report_fixes[i]}"
+        [ -z "$found" ] || printf '\n#### %s\n\nThe rule: %s\nIts key: %s\n\n%s\nHow to fix it:\n\n%s\n' \
+            "${report_titles[i]}" "${report_urls[i]}" "\`${report_keys[i]}\`" "$found" "${report_fixes[i]}"
+    done
+    [ "${#accepted_messages[@]}" = 0 ] || report_accepted
+}
+
+# report_accepted prints the accepted findings, each with the reason of the line that accepts it.
+report_accepted() {
+    local j at
+    printf '\n#### Accepted\n\nThe description accepts these findings, and each warns no more:\n\n'
+    for j in "${!accepted_messages[@]}"; do
+        at=${accepted_files[j]}${accepted_lines[j]:+:${accepted_lines[j]}}
+        printf '%s\n' "- ${at:+\`$at\`: }${accepted_messages[j]//$'\n'/$'\n'  }" \
+            "  Reason: ${accepted_reasons[j]}"
     done
 }
 
@@ -253,9 +273,13 @@ report_comment() {
 # report_finish reports the findings, and exits 0. A comment's refusal takes one of the 10
 # warnings.
 report_finish() {
-    local head updated report error shown='' limit=10
+    local head updated report error shown='' limit=10 pull body
     if [ -n "${PR-}" ]; then
-        head=$(gh api "repos/$GH_REPO/pulls/$PR" --jq .head.sha)
+        pull=$(gh api "repos/$GH_REPO/pulls/$PR")
+        head=$(jq -r .head.sha <<<"$pull")
+        # GitHub keeps the line ends that a browser sent, \r\n.
+        body=$(jq -r '.body // ""' <<<"$pull")
+        report_accept "${body//$'\r'/}"
         report=$(report_text 'does not block the merge' "\`${head:0:7}\`")
         shown=$(report_shown "$head") || shown=''
     else
