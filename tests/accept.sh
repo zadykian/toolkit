@@ -51,6 +51,22 @@ warnings 0
 summarizes "No findings remain as of"
 summarizes "Reason: Names of git."
 
+setup comments-nothing-when-all-are-accepted
+described $'# T\n\nAccepts: probe a: Names of git.'
+probe <<<"finding a 'Found.'"
+writes 0
+
+setup edits-the-comment-when-all-are-accepted
+answer repos/o/r/issues/1/comments '[{"id": 5, "body": "<!-- zadykian/actions:probe -->\nOld."}]'
+described $'# T\n\nAccepts: probe a: Names of git.'
+probe <<<"finding a 'Found.'"
+wrote PATCH repos/o/r/issues/comments/5 'No findings remain'
+
+setup ignores-a-line-outside-the-footers
+described $'# T\n\nAccepts: probe a: Names of git.\n\nMore text.'
+probe <<<"finding a 'Found.'"
+warnings 1
+
 # GitHub keeps the \r\n that a browser sent, which an attribution line ends the footers after.
 setup reads-a-description-with-crlf-line-ends
 described $'# T\r\n\r\nAccepts: probe a: Names of git.\r\n\r\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\r\n'
