@@ -78,9 +78,10 @@ types='feat fix refactor perf test docs style build ci chore revert'
 max_commit_lines=100 max_pr_lines=500 max_stack_prs=5
 # The pull request's base, and its stack's, which is its own outside a stack.
 pull=$(gh api "repos/$GH_REPO/pulls/$PR" --jq '[.base.ref, .commits // 0, .stack.size // 0,
-    .draft // false, .stack.base.ref // .base.ref, .base.repo.default_branch, .title] |
+    .draft // false, .stack.base.ref // .base.ref, .base.repo.default_branch, .head.ref // "-",
+    .title] |
     map(tostring) | join(" ")')
-read -r base total linked draft trunk default title <<<"$pull"
+read -r base total linked draft trunk default head title <<<"$pull"
 header_form="^(${types// /|})(\([a-z0-9._/-]+\))?!?: [^ ]"
 # How to reword a commit, as section 4 of the skill says.
 reword=$(
@@ -147,19 +148,39 @@ title's colon, and end the description with a \`BREAKING CHANGE:\` footer: \
 
 header "The PR title \`$title\`" "$title" pr-title
 
-# Each commit, as its SHA and its counts of parents and lines, then the lines of its message.
+# Each commit, as its SHA, its counts of parents and lines and its first parent's SHA, then the
+# lines of its message.
 commits=$(gh api --paginate "repos/$GH_REPO/pulls/$PR/commits?per_page=100" --jq '.[] | {sha,
-    parents: (.parents | length), lines: (.commit.message | sub("\\s+$"; "") | split("\n"))} |
-    "\(.sha) \(.parents) \(.lines | length)", .lines[]')
+    parents: (.parents | length), first: (.parents[0].sha // "-"),
+    lines: (.commit.message | sub("\\s+$"; "") | split("\n"))} |
+    "\(.sha) \(.parents) \(.lines | length) \(.first)", .lines[]')
 [ -n "$commits" ] || cannot_check 'GitHub lists none of its commits.'
+# A merge commit that landed a pull request into this one's head branch, as an integration
+# branch's pull request holds, takes no finding. Nor do the commits that it brought in: its own run
+# checked them, and they count toward no size. gh stack merge lands a whole stack under one merge,
+# and commits/SHA/pulls lists its bottom pull request alone, so compare lists what the merge
+# brought in, from its first parent.
+declare -A landed=()
+while read -r sha parents count first; do
+    for ((i = 0; i < count; i++)); do IFS= read -r _; done
+    [ "$parents" -gt 1 ] || continue
+    pulls=$(gh api "repos/$GH_REPO/commits/$sha/pulls")
+    jq -e --arg head "$head" 'any(.[]; .merged_at != null and .base.ref == $head)' \
+        <<<"$pulls" >/dev/null || continue
+    brought=$(gh api --paginate "repos/$GH_REPO/compare/$first...$sha?per_page=100" \
+        --jq '.commits[].sha')
+    while read -r inner; do landed[$inner]=1; done <<<"$brought"
+    landed[$sha]=1
+done <<<"$commits"
 # A commit to fold in or rebase away gets that finding alone.
 temporary='^((fixup|squash|amend)!|wip([^[:alnum:]]|$))'
 listed=0 breaking='' pr_lines=0
-while read -r sha parents count; do
+while read -r sha parents count _; do
     lines=()
     for ((i = 0; i < count; i++)); do IFS= read -r line && lines+=("$line"); done
     commit="\`${sha:0:7} ${lines[0]-}\`"
     listed=$((listed + 1))
+    [ -z "${landed[$sha]-}" ] || continue
     if [ "$parents" -gt 1 ]; then
         finding merge "Commit $commit is a merge commit, of $parents parents."
         continue

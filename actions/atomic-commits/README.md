@@ -64,7 +64,10 @@ Each commit's place in the branch:
 
 - `fixup`: no commit is temporary, as [section 2][s2] says: its header starts neither `fixup!`,
   `squash!` nor `amend!`, nor the word WIP.
-- `merge`: no commit merges another branch in, as [section 6][s6] keeps a stack by rebase.
+- `merge`: no commit merges another branch in, as [section 6][s6] keeps a stack by rebase. A merge
+  that landed a pull request into the head branch, as `commits/SHA/pulls` lists it, is no finding.
+  Nor are the commits that merge brought in, a whole stack's under `gh stack merge`. Their lines
+  count toward no size, as their own runs checked them.
 
 Either finding is the commit's only one, as its fix folds the commit in or drops it.
 

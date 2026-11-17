@@ -49,8 +49,7 @@ PR 3/3  feat(checkout): retry failed gateway calls                  ~90
 
 - Order by dependency: whatever later commits need comes first.
 - Estimates run low. If a PR is estimated above ~400, split it now.
-- Over 5 PRs, stop and split the issue into sub-issues, as `issue` files them, and plan a stack
-  for each.
+- Over 5 PRs, stop and split the issue into sub-issues, as `issue` files them, each with a stack.
 - If the user is present and the plan has more than one PR, show it and wait for a go-ahead.
   Otherwise follow it and include it in the final report.
 
@@ -182,13 +181,14 @@ One branch per PR, each branched from the previous one:
 main ← feat/retry-1-gateway ← feat/retry-2-policy ← feat/retry-3-checkout
 ```
 
-- Start the next PR's branch once the previous one's commits are done:
-  `git switch -c feat/retry-2-policy`.
+- Start the next PR's branch once its predecessor's commits are done: `git switch -c feat/retry-2-policy`.
 - Always edit from the top branch. To change a commit in a lower PR, make a `--fixup` commit on the
   top branch and run `GIT_SEQUENCE_EDITOR=: git rebase -i --autosquash --update-refs main`; this
   rewrites the stack and moves every branch ref.
-- A PR holds no merge commit. Catch up with `main` by rebasing from the top branch, never by
-  merging it in: `git fetch origin && git rebase --update-refs origin/main`.
+- A PR holds no merge commit, bar one that landed a PR into its head branch, as an integration
+  branch's PR does. That merge and the commits it brought in take no finding. Catch up with `main`
+  by rebasing from the top branch, never by merging it in:
+  `git fetch origin && git rebase --update-refs origin/main`.
 - Push and open PRs only when the user asked for it. Push each branch with
   `git push --force-with-lease origin <branch>`. Open each PR against the branch below it, as a
   draft where the change takes two or more:

@@ -137,6 +137,7 @@ setup warns-once-on-a-merge-commit
 answer repos/o/r/pulls/1 "$(pull '{"draft": true, "base": {"ref": "feat/x-1"}}')"
 answer repos/o/r/pulls/1/commits '[{"sha": "abcdef0123", "parents": [{}, {}],
     "commit": {"message": "Merge branch '\''main'\'' into feat"}}]'
+answer repos/o/r/commits/abcdef0123/pulls '[]'
 atomic
 warns "Commit \`abcdef0 Merge branch 'main' into feat\` is a merge commit, of 2 parents."
 warnings 1
@@ -194,6 +195,7 @@ setup counts-no-lines-of-a-merge-commit
 answer repos/o/r/pulls/1/commits '[{"sha": "abcdef0", "parents": [{}, {}],
     "commit": {"message": "Merge branch '\''main'\'' into feat"}}]'
 answer repos/o/r/commits/abcdef0 '{"files": [{"filename": "a", "additions": 600, "deletions": 0}]}'
+answer repos/o/r/commits/abcdef0/pulls '[]'
 atomic
 warnings 1
 
