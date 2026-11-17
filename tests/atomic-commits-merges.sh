@@ -48,6 +48,19 @@ answer repos/o/r/compare/0000000...ccccccc '{"commits": [{"sha": "aaaaaaa"}, {"s
 atomic
 warnings 0
 
+# A landed commit takes no finding, but its breaking mark still asks a ! of this pull request's
+# title, as the merge into the default branch carries that title.
+setup asks-a-bang-of-the-title-for-a-landed-breaking-commit
+answer repos/o/r/pulls/1/commits '[
+    {"sha": "aaaaaaa", "parents": [{}], "commit": {"message": "feat!: add a\n\nBREAKING CHANGE: a goes."}},
+    {"sha": "ccccccc", "parents": [{"sha": "0000000"}, {}], "commit": {"message": "Merge pull request #7"}}]'
+answer repos/o/r/commits/ccccccc/pulls '[{"number": 7, "merged_at": "2026-01-01T00:00:00Z",
+    "base": {"ref": "feat"}}]'
+answer repos/o/r/compare/0000000...ccccccc '{"commits": [{"sha": "aaaaaaa"}, {"sha": "ccccccc"}]}'
+atomic
+warns 'has no `!`, but it holds breaking commits: `aaaaaaa feat!: add a`.'
+warnings 1
+
 # A lookup that GitHub refuses stops the check, rather than read a landed merge as a finding.
 setup stops-where-a-landed-lookup-is-refused
 answer repos/o/r/pulls/1/commits '[

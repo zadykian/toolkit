@@ -180,7 +180,14 @@ while read -r sha parents count _; do
     for ((i = 0; i < count; i++)); do IFS= read -r line && lines+=("$line"); done
     commit="\`${sha:0:7} ${lines[0]-}\`"
     listed=$((listed + 1))
-    [ -z "${landed[$sha]-}" ] || continue
+    if [ -n "${landed[$sha]-}" ]; then
+        # It takes no finding, but a breaking mark of its own asks a ! of the title.
+        if [[ ${lines[0]%%: *} == *! ]] || printf '%s\n' "${lines[@]:1}" |
+            grep -Eq '^BREAKING[ -]CHANGE:'; then
+            breaking+="${breaking:+, }$commit"
+        fi
+        continue
+    fi
     if [ "$parents" -gt 1 ]; then
         finding merge "Commit $commit is a merge commit, of $parents parents."
         continue
