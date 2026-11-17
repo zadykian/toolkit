@@ -60,6 +60,9 @@
 #   [ -n "${body//[[:space:]]/}" ] || finding empty "The description of #$PR is empty."
 #   report_finish
 
+# shellcheck source=actions/lib/accept.sh
+. "$(dirname "${BASH_SOURCE[0]}")/accept.sh"
+
 # The rules by index: their keys, titles, links and fixes.
 report_keys=() report_titles=() report_urls=() report_fixes=()
 # The findings by index: their rules' indices, messages, files and lines.
@@ -256,6 +259,7 @@ report_finish() {
     local head updated report error shown='' limit=10
     if [ -n "${PR-}" ]; then
         head=$(gh api "repos/$GH_REPO/pulls/$PR" --jq .head.sha)
+        report_accept "$(gh api "repos/$GH_REPO/pulls/$PR" --jq '.body // ""')"
         report=$(report_text 'does not block the merge' "\`${head:0:7}\`")
         shown=$(report_shown "$head") || shown=''
     else
