@@ -154,7 +154,7 @@ commits=$(gh api --paginate "repos/$GH_REPO/pulls/$PR/commits?per_page=100" --jq
 [ -n "$commits" ] || cannot_check 'GitHub lists none of its commits.'
 # A commit to fold in or rebase away gets that finding alone.
 temporary='^((fixup|squash|amend)!|wip([^[:alnum:]]|$))'
-listed=0 breaking=''
+listed=0 breaking='' pr_lines=0
 while read -r sha parents count; do
     lines=()
     for ((i = 0; i < count; i++)); do IFS= read -r line && lines+=("$line"); done
@@ -162,17 +162,20 @@ while read -r sha parents count; do
     listed=$((listed + 1))
     if [ "$parents" -gt 1 ]; then
         finding merge "Commit $commit is a merge commit, of $parents parents."
+        continue
     elif [[ ${lines[0],,} =~ $temporary ]]; then
         finding fixup "Commit $commit is temporary: its header starts \`${lines[0]%% *}\`."
     else
         header "Commit $commit" "${lines[0]-}"
         message "$commit" "${lines[@]}"
-        size=0 body=${lines[*]:1}
-        [[ ${body,,} == *mechanical* ]] ||
-            size=$(changed "repos/$GH_REPO/commits/$sha?per_page=100" '.files[]')
-        [ "$size" -le "$max_commit_lines" ] || finding commit-size \
-            "Commit $commit changes $size lines, and its body does not say \`mechanical\`."
     fi
+    # A commit that says mechanical counts none, in its own size and in the pull request's.
+    size=0 body=${lines[*]:1}
+    [[ ${body,,} == *mechanical* ]] ||
+        size=$(changed "repos/$GH_REPO/commits/$sha?per_page=100" '.files[]')
+    pr_lines=$((pr_lines + size))
+    [[ ${lines[0],,} =~ $temporary ]] || [ "$size" -le "$max_commit_lines" ] || finding commit-size \
+        "Commit $commit changes $size lines, and its body does not say \`mechanical\`."
 done <<<"$commits"
 # GitHub lists 250 commits of a pull request at most.
 [ "$total" -le "$listed" ] || finding commit-count "#$PR has $total commits, and GitHub lists the \
@@ -181,8 +184,8 @@ if [ -n "$breaking" ] && [[ ${title%%: *} != *! ]]; then
     finding pr-breaking "The PR title \`$title\` has no \`!\`, but it holds breaking commits: \
 $breaking."
 fi
-size=$(changed "repos/$GH_REPO/pulls/$PR/files?per_page=100" '.[]')
-[ "$size" -le "$max_pr_lines" ] || finding pr-size "#$PR changes $size lines against \`$base\`."
+[ "$pr_lines" -le "$max_pr_lines" ] ||
+    finding pr-size "#$PR changes $pr_lines lines in its commits, against \`$base\`."
 # The stack holds as many pull requests as GitHub links in it. A chain of bases that nothing links
 # is not counted.
 [ "$linked" -le "$max_stack_prs" ] ||

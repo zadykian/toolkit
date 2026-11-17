@@ -18,7 +18,6 @@ commits() {
     for sha in $(jq -r '.[].sha' <<<"$list"); do
         answer "repos/o/r/commits/$sha" '{"files": []}'
     done
-    answer repos/o/r/pulls/1/files '[]'
 }
 
 # atomic runs the check with two globs of the default exclude, and the VAR=VALUE arguments over
@@ -138,7 +137,6 @@ setup warns-once-on-a-merge-commit
 answer repos/o/r/pulls/1 "$(pull '{"draft": true, "base": {"ref": "feat/x-1"}}')"
 answer repos/o/r/pulls/1/commits '[{"sha": "abcdef0123", "parents": [{}, {}],
     "commit": {"message": "Merge branch '\''main'\'' into feat"}}]'
-answer repos/o/r/pulls/1/files '[]'
 atomic
 warns "Commit \`abcdef0 Merge branch 'main' into feat\` is a merge commit, of 2 parents."
 warnings 1
@@ -171,15 +169,32 @@ warns 'Commit `4444444 feat: add v` changes 101 lines'
 warnings 2
 atomic EXCLUDE=go.sum
 warns 'Commit `2222222 feat: add z` changes 600 lines'
-warnings 3
+warns "#1 changes 802 lines in its commits"
+warnings 4
 
+# A pull request's size is the sum of its commits' counts: a mechanical commit counts none, and a
+# merge commit none. A temporary commit counts, as folding it in keeps its lines. The size reads the
+# commits that GitHub lists alone.
 setup warns-on-a-large-pull-request
-commits 'feat: add y'
-answer repos/o/r/pulls/1/files '[{"filename": "a", "additions": 400, "deletions": 0}]' \
-    '[{"filename": "b", "additions": 51, "deletions": 50},
-    {"filename": "go.sum", "additions": 900, "deletions": 0}]'
+commits 'feat: add y' 'feat: add z' $'refactor: rename w\n\nA mechanical rename.' 'fixup! feat: add y'
+answer repos/o/r/commits/1111111 '{"files": [{"filename": "a", "additions": 100, "deletions": 0}]}'
+answer repos/o/r/commits/2222222 '{"files": [{"filename": "b", "additions": 51, "deletions": 49},
+    {"filename": "go.sum", "additions": 900, "deletions": 0}]}'
+answer repos/o/r/commits/3333333 '{"files": [{"filename": "a", "additions": 976, "deletions": 0}]}'
+answer repos/o/r/commits/4444444 '{"files": [{"filename": "c", "additions": 100, "deletions": 0}]}'
 atomic
-warns '#1 changes 501 lines against `main`.'
+warnings 1
+answer repos/o/r/commits/4444444 '{"files": [{"filename": "c", "additions": 301, "deletions": 0}]}'
+atomic
+warns '#1 changes 501 lines in its commits, against `main`.'
+warns 'title=atomic-commits%3A The pull request is over 500 changed lines::'
+warnings 2
+
+setup counts-no-lines-of-a-merge-commit
+answer repos/o/r/pulls/1/commits '[{"sha": "abcdef0", "parents": [{}, {}],
+    "commit": {"message": "Merge branch '\''main'\'' into feat"}}]'
+answer repos/o/r/commits/abcdef0 '{"files": [{"filename": "a", "additions": 600, "deletions": 0}]}'
+atomic
 warnings 1
 
 # A stack holds as many pull requests as GitHub links in it.

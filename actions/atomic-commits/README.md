@@ -73,8 +73,10 @@ The sizes, as [the hard rules][rules] set them:
 - `commit-size`: a commit changes 100 lines at most, its insertions and deletions in the paths
   that `exclude` does not match. A purely mechanical commit, such as a rename, may be larger where
   its body says `mechanical`.
-- `pr-size`: the pull request changes 500 lines at most against its base, in the paths that
-  `exclude` does not match.
+- `pr-size`: the pull request changes 500 lines at most, as the sum of its commits' counts, in the
+  paths that `exclude` does not match. A commit that says `mechanical` counts none, and a merge
+  commit none. A temporary commit counts its lines, as folding it in keeps them. Past the 250
+  commits that GitHub lists, the sum reads the listed commits alone, and `commit-count` says so.
 - `pr-stack-size`: the pull request's stack holds 5 pull requests at most. It counts those that
   GitHub links in it.
 

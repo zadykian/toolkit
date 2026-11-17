@@ -13,8 +13,9 @@ description: "Use when implementing code changes in a git repo - deliver small, 
    capitalized or not.
 3. Every commit message follows Conventional Commits 1.0.0 (section 3). A change that fits two types
    is two commits.
-4. No PR exceeds 500 changed lines against its own base. Larger work becomes a stack of PRs, each of
-   which leaves `main` green and releasable even if the rest never lands.
+4. No PR exceeds 500 changed lines against its own base, the sum of its commits' counts, where a
+   `mechanical` or merge commit counts none. Larger work becomes a stack of PRs, each of which
+   leaves `main` green and releasable even if the rest never lands.
 5. No stack exceeds 5 PRs, and each closes only the issues that planned it. Work that 5 PRs of
    500 lines cannot hold splits into sub-issues, each landing as a stack of its own.
 6. Plan the split before writing code, then commit as you go. Never write everything first and split
@@ -264,8 +265,8 @@ for c in $(git rev-list --reverse main..HEAD); do
   echo "$n  $(git log -1 --format='%h %s' "$c")"
 done
 
-# Size of each PR against its own base
-size() { git diff --numstat "$1"..."$2" -- . "${excl[@]}" | awk '{s+=$1+$2} END{print s+0}'; }
+# Size of each PR: its commits' counts, none for a merge or one whose body says mechanical
+size() { for c in $(git rev-list --no-merges "$1".."$2"); do git log -1 --format=%b "$c" | grep -qi mechanical || git show --numstat --format= "$c" -- . "${excl[@]}"; done | awk '{s+=$1+$2} END{print s+0}'; }
 size main feat/retry-1-gateway
 size feat/retry-1-gateway feat/retry-2-policy
 
@@ -279,7 +280,6 @@ git rebase --exec '<build && test>' main
 ```
 
 If the suite is slow, run build plus affected tests per commit, and the full suite on each PR's tip.
-
 If `--exec` stops on a commit, fix that commit (`git commit --amend`), then `git rebase --continue`.
 If any size is over its limit or any header doesn't conform, fix it before reporting.
 
