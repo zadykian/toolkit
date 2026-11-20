@@ -18,11 +18,30 @@ design live. They add to the steps below and change none of them.
 ## Rounds
 
 Work the tree in **rounds**. The **frontier** is every decision whose prerequisites are settled:
-the questions you can ask now without guessing at answers you have not heard. Ask the whole
-frontier in one round. Number each question and give your recommended answer. Then wait for the
-user's answers before the next round.
+the questions you can ask now without guessing at answers you have not heard. A round asks at most
+four questions of the frontier, those that unblock the most first. Give each your recommended
+answer. Then wait for the user's answers before the next round.
 
-Format a round like so:
+Each round's answers reshape the tree. Settled decisions push the frontier outward and unblock the
+questions that hung on them. Recompute the frontier and ask the next round. A question whose
+answer depends on one still open in this round belongs to a later round, as does a question of the
+frontier past the first four.
+
+## Asking a round
+
+Ask a round in one call of the tool that puts questions to the user as choices, such as Claude
+Code's `AskUserQuestion`:
+
+- Each question's header names its decision in a word or two.
+- Your recommended answer is the first option, its label ending in "(Recommended)". Add one to
+  three alternatives that you would defend. The tool adds a free answer.
+- Each option's description gives its cost. A choice between code, configs or layouts shows each
+  in its option's preview.
+- Where several answers can hold at once, let the user pick several.
+- The dialog may hide what you wrote before it, so each question carries its own context in a few
+  sentences. A question that needs more is often two.
+
+Where no such tool exists, number each question and write the round as text:
 
 ```text
 Q1 - <question title>: <question body, which may run to paragraphs and hold choices>
@@ -37,10 +56,6 @@ Recommended: <your recommended answer>
 ```
 
 Word each question so that "yes" accepts your recommended answer.
-
-Each round's answers reshape the tree. Settled decisions push the frontier outward and unblock the
-questions that hung on them. Recompute the frontier and ask the next round. A question whose
-answer depends on one still open in this round belongs to a later round.
 
 ## Facts
 
