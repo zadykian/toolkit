@@ -17,8 +17,10 @@ paths of its glossary and its decision records, and its test command.
 ## grill-me
 
 Interviews the user about a plan, a decision or an idea, until both understand it. It maps the
-topic as a tree of decisions and asks in rounds: every question whose prerequisites are settled,
-each with a recommended answer worded so that "yes" accepts it. Claude looks facts up itself, inline
+topic as a tree of decisions and asks in rounds of four questions at most, whose prerequisites are
+settled. A round is one dialog of choices, the recommended answer first, as `AskUserQuestion` asks
+it. Where Claude has no such tool, it writes the round as text, each recommended answer worded so
+that "yes" accepts it. Claude looks facts up itself, inline
 or through a subagent as `delegate` says, and puts only decisions to the user. The session ends
 when no branch is left, and Claude acts on it once the user agrees.
 
